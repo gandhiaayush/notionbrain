@@ -1289,6 +1289,28 @@ async function loadCallbacks(){
   } catch(e){ console.error('loadCallbacks:',e); }
 }
 
+function urgentCardHtml(o, icon){
+  const paid = o.paymentMethod && o.paymentMethod !== 'Unpaid';
+  const typeBadge = o.orderType === 'Expedited'
+    ? '<span class="badge b-exp">Expedited</span>'
+    : '<span class="badge b-reg">Regular</span>';
+  const payBadge = paid
+    ? '<span class="badge b-paid">Paid · ' + o.paymentMethod + '</span>'
+    : '<span class="badge b-unpaid">Unpaid' + (o.price ? ' · $' + o.price : '') + '</span>';
+  const datePart = o.expectedDate
+    ? '<span style="font-family:var(--fm);font-size:.72rem;color:var(--muted)">' + (icon === '🚨' ? 'Expected ' : 'Due ') + o.expectedDate + '</span>'
+    : '';
+  return '<div class="cb-card' + (icon === '🚨' ? ' urgent-cb' : '') + '" onclick="openDrawerForOrder(\'' + o.pageId + '\')">'
+    + '<div class="cb-icon">' + icon + '</div>'
+    + '<div class="cb-body">'
+    + '<div class="cb-name">' + o.customerName + ' — ' + o.orderId + '</div>'
+    + '<div class="cb-reason">' + (o.garmentType || 'Order') + (icon === '🚨' ? ' due ' + (o.expectedDate || '?') + '. Stage: ' + (o.tracker || '—') : ' ready. Customer not yet collected.') + '.</div>'
+    + '<div class="cb-meta">' + typeBadge + payBadge + datePart + '</div>'
+    + '</div>'
+    + '<div class="cb-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawerForOrder(\'' + o.pageId + '\')">View</button></div>'
+    + '</div>';
+}
+
 async function loadUrgentOrders(){
   const container = document.getElementById('urgent-orders-container');
   if(!container) return;
@@ -1296,42 +1318,12 @@ async function loadUrgentOrders(){
     const d = await (await fetch('/api/dashboard/urgent',{headers:authH()})).json();
     let html = '';
     if(d.overdue && d.overdue.length){
-      html += `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin-bottom:10px">🚨 Overdue / Due Today (${d.overdue.length})</div>`;
-      html += d.overdue.map(o=>`
-        <div class="cb-card urgent-cb" onclick="openDrawerForOrder('${o.pageId}')">
-          <div class="cb-icon">🚨</div>
-          <div class="cb-body">
-            <div class="cb-name">${o.customerName} — ${o.orderId}</div>
-            <div class="cb-reason">${o.garmentType||'Order'} due ${o.expectedDate||'?'}. Stage: ${o.tracker||'—'}.</div>
-            <div class="cb-meta">
-              ${o.orderType==='Expedited'?'<span class="badge b-exp">Expedited</span>':'<span class="badge b-reg">Regular</span>'}
-              ${o.paymentMethod?`<span class="badge b-paid">Paid · ${o.paymentMethod}</span>`:'<span class="badge b-unpaid">Unpaid${o.price?' · $'+o.price:''}</span>'}
-              <span style="font-family:var(--fm);font-size:.72rem;color:var(--muted)">Expected ${o.expectedDate}</span>
-            </div>
-          </div>
-          <div class="cb-actions">
-            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawerForOrder('${o.pageId}')">View</button>
-          </div>
-        </div>`).join('');
+      html += '<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin-bottom:10px">🚨 Overdue / Due Today (' + d.overdue.length + ')</div>';
+      html += d.overdue.map(o => urgentCardHtml(o, '🚨')).join('');
     }
     if(d.readyForPickup && d.readyForPickup.length){
-      html += `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:${d.overdue?.length?'18px':0} 0 10px">⏰ Ready for Pickup (${d.readyForPickup.length})</div>`;
-      html += d.readyForPickup.map(o=>`
-        <div class="cb-card" onclick="openDrawerForOrder('${o.pageId}')">
-          <div class="cb-icon">⏰</div>
-          <div class="cb-body">
-            <div class="cb-name">${o.customerName} — ${o.orderId}</div>
-            <div class="cb-reason">${o.garmentType||'Order'} ready. Customer not yet collected.</div>
-            <div class="cb-meta">
-              ${o.orderType==='Expedited'?'<span class="badge b-exp">Expedited</span>':'<span class="badge b-reg">Regular</span>'}
-              ${o.paymentMethod?`<span class="badge b-paid">Paid · ${o.paymentMethod}</span>`:'<span class="badge b-unpaid">Unpaid</span>'}
-              ${o.expectedDate?`<span style="font-family:var(--fm);font-size:.72rem;color:var(--muted)">Due ${o.expectedDate}</span>`:''}
-            </div>
-          </div>
-          <div class="cb-actions">
-            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawerForOrder('${o.pageId}')">View</button>
-          </div>
-        </div>`).join('');
+      html += '<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:' + (d.overdue && d.overdue.length ? '18px' : '0') + ' 0 10px">⏰ Ready for Pickup (' + d.readyForPickup.length + ')</div>';
+      html += d.readyForPickup.map(o => urgentCardHtml(o, '⏰')).join('');
     }
     container.innerHTML = html || '';
   } catch(e){ console.error('loadUrgentOrders:',e); container.innerHTML=''; }
