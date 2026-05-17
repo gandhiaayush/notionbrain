@@ -230,8 +230,9 @@ r.patch("/callbacks/:id/phone", async (req, res) => {
 
 // POST /callbacks/:id/call  — trigger Twilio call immediately (no waiting for poller)
 r.post("/callbacks/:id/call", async (req, res) => {
-	const { phone, customerName, orderId, reason } = req.body as {
+	const { phone, customerName, orderId, reason, garmentType, trackerStage, price, paymentMethod, orderType, notes } = req.body as {
 		phone: string; customerName: string; orderId: string; reason: string;
+		garmentType?: string; trackerStage?: string; price?: number; paymentMethod?: string; orderType?: string; notes?: string;
 	};
 	const accountSid  = process.env.TWILIO_ACCOUNT_SID;
 	const authToken   = process.env.TWILIO_AUTH_TOKEN;
@@ -241,7 +242,14 @@ r.post("/callbacks/:id/call", async (req, res) => {
 		res.status(500).json({ error: "Twilio env vars not set" }); return;
 	}
 	try {
-		const callUrl = `${webhookBase}/voice?outbound=true&customerName=${encodeURIComponent(customerName)}&orderId=${encodeURIComponent(orderId)}&reason=${encodeURIComponent(reason)}`;
+		const params = new URLSearchParams({
+			outbound: "true",
+			customerName, orderId, reason: reason || "",
+			garmentType: garmentType || "", trackerStage: trackerStage || "",
+			price: String(price ?? ""), paymentMethod: paymentMethod || "",
+			orderType: orderType || "", notes: (notes || "").slice(0, 400),
+		});
+		const callUrl = `${webhookBase}/voice?${params.toString()}`;
 		const creds   = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 		const r2 = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`, {
 			method: "POST",
@@ -257,6 +265,19 @@ r.post("/callbacks/:id/call", async (req, res) => {
 		await notionUpdatePage(req.params.id, { STATUS: { rich_text: [{ type: "text", text: { content: "Called Back" } }] } });
 		await logCall(customerName, phone, reason, "Called");
 		res.json({ ok: true, callSid: sid });
+	} catch (err) { res.status(500).json({ error: String(err) }); }
+});
+
+// GET /urgent  — overdue orders + ready-for-pickup orders (for callbacks tab)
+r.get("/urgent", async (req, res) => {
+	try {
+		const result = await notionQuery(ORDERS_DB);
+		const today  = new Date().toISOString().split("T")[0];
+		const all    = result.results.map(shapeOrder);
+		const active = all.filter(o => o.tracker !== "Delivered" && o.tracker !== "Cancelled" && o.tracker !== null);
+		const overdue       = active.filter(o => o.expectedDate && o.expectedDate < today);
+		const readyForPickup = active.filter(o => o.tracker === "Ready for Pickup" && !(o.expectedDate && o.expectedDate < today));
+		res.json({ overdue, readyForPickup });
 	} catch (err) { res.status(500).json({ error: String(err) }); }
 });
 
@@ -329,7 +350,10 @@ r.patch("/orders/:id/phone", async (req, res) => {
 
 // POST /orders/:id/call  — call customer directly from the order drawer
 r.post("/orders/:id/call", async (req, res) => {
-	const { phone, customerName, orderId } = req.body as { phone: string; customerName: string; orderId: string };
+	const { phone, customerName, orderId, garmentType, trackerStage, price, paymentMethod, orderType, notes } = req.body as {
+		phone: string; customerName: string; orderId: string;
+		garmentType?: string; trackerStage?: string; price?: number; paymentMethod?: string; orderType?: string; notes?: string;
+	};
 	const accountSid  = process.env.TWILIO_ACCOUNT_SID;
 	const authToken   = process.env.TWILIO_AUTH_TOKEN;
 	const fromNumber  = process.env.TWILIO_PHONE_NUMBER;
@@ -339,7 +363,14 @@ r.post("/orders/:id/call", async (req, res) => {
 	}
 	if (!phone) { res.status(400).json({ error: "phone required" }); return; }
 	try {
-		const callUrl = `${webhookBase}/voice?outbound=true&customerName=${encodeURIComponent(customerName)}&orderId=${encodeURIComponent(orderId)}`;
+		const params = new URLSearchParams({
+			outbound: "true",
+			customerName, orderId,
+			garmentType: garmentType || "", trackerStage: trackerStage || "",
+			price: String(price ?? ""), paymentMethod: paymentMethod || "",
+			orderType: orderType || "", notes: (notes || "").slice(0, 400),
+		});
+		const callUrl = `${webhookBase}/voice?${params.toString()}`;
 		const creds   = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 		const r2 = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`, {
 			method: "POST",
@@ -348,7 +379,7 @@ r.post("/orders/:id/call", async (req, res) => {
 		});
 		const twilioRes2 = await r2.text();
 		if (!r2.ok) {
-			await logCall(customerName, phone, "Pickup/order call", "Failed");
+			await logCall(customerName, phone, "Order call", "Failed");
 			res.status(500).json({ error: twilioRes2 }); return;
 		}
 		const { sid } = JSON.parse(twilioRes2) as { sid: string };

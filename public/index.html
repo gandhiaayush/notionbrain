@@ -529,73 +529,9 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
           <div id="call-log"></div>
         </div>
       </div>
-      <div style="margin-top:24px">
-      <div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin-bottom:10px">🚨 Overdue / Due Today</div>
-      <div class="cb-card urgent-cb" onclick="openDrawer('o1')">
-        <div class="cb-icon">🚨</div>
-        <div class="cb-body">
-          <div class="cb-name">Angela Torres — #DCL-2838</div>
-          <div class="cb-reason">Expedited coat — due today (2026-05-17). Still in Sorting stage.</div>
-          <div class="cb-meta">
-            <span class="badge b-exp">Expedited</span>
-            <span class="badge b-unpaid">Unpaid · $33</span>
-            <span class="badge b-cb">📞 Callback pending</span>
-          </div>
-        </div>
-        <div class="cb-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();showToast('Stage updated ✓','ok')">Advance Stage</button>
-          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawer('o1')">View</button>
-        </div>
+      <div style="margin-top:24px" id="urgent-orders-container">
+        <div style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem">Loading urgent orders…</div>
       </div>
-
-      <div class="cb-card urgent-cb" onclick="openDrawer('o1')">
-        <div class="cb-icon">⏰</div>
-        <div class="cb-body">
-          <div class="cb-name">Robert Liu — #DCL-2839</div>
-          <div class="cb-reason">Shirt ready for pickup since yesterday. Customer not yet collected.</div>
-          <div class="cb-meta">
-            <span class="badge b-reg">Regular</span>
-            <span class="badge b-paid">Paid · Venmo</span>
-            <span style="font-family:var(--fm);font-size:.72rem;color:var(--muted)">Ready since 2026-05-15</span>
-          </div>
-        </div>
-        <div class="cb-actions">
-          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showToast('Reminder queued','ok')">Remind</button>
-          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawer('o1')">View</button>
-        </div>
-      </div>
-
-      <!-- Callbacks requested -->
-      <div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--orange);margin:18px 0 10px">📞 Callback Requested</div>
-      <div class="cb-card warn-cb" onclick="openDrawer('o1')">
-        <div class="cb-icon">📞</div>
-        <div class="cb-body">
-          <div class="cb-name">Angela Torres — #DCL-2838</div>
-          <div class="cb-reason">"Wants to confirm pickup time for expedited coat. Called at 8am."</div>
-          <div class="cb-meta">
-            <span class="badge b-g">Coat</span>
-            <span class="td-mono" style="font-size:.75rem;color:var(--muted)">+1 (415) 555-7722</span>
-          </div>
-        </div>
-        <div class="cb-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();showToast('Callback logged ✓','ok')">Mark Done</button>
-        </div>
-      </div>
-      <div class="cb-card warn-cb" onclick="openDrawer('o1')">
-        <div class="cb-icon">📞</div>
-        <div class="cb-body">
-          <div class="cb-name">Priya Mehta — #DCL-2834</div>
-          <div class="cb-reason">"Wants to know if dress will be ready by Saturday for wedding."</div>
-          <div class="cb-meta">
-            <span class="badge b-g">Dress</span>
-            <span class="td-mono" style="font-size:.75rem;color:var(--muted)">+1 (510) 555-6610</span>
-          </div>
-        </div>
-        <div class="cb-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();showToast('Callback logged ✓','ok')">Mark Done</button>
-        </div>
-      </div>
-    </div>
     </div><!-- /callbacks extra -->
 
     </div><!-- /content-area -->
@@ -821,7 +757,7 @@ function tick(){
 function switchTab(name){
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===name));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id==='tab-'+name));
-  if(name==='callbacks') loadCallbacks();
+  if(name==='callbacks'){ loadCallbacks(); loadUrgentOrders(); }
   if(name==='orders')    loadOrders(getFilters());
 }
 
@@ -1185,7 +1121,17 @@ async function callOrderNow(){
   try{
     const r = await fetch(`/api/dashboard/orders/${currentOrder.pageId}/call`,{
       method:'POST', headers:jsonH(),
-      body: JSON.stringify({phone, customerName: currentOrder.customerName, orderId: currentOrder.orderId}),
+      body: JSON.stringify({
+        phone,
+        customerName: currentOrder.customerName,
+        orderId: currentOrder.orderId,
+        garmentType: currentOrder.garmentType||'',
+        trackerStage: currentOrder.tracker||'',
+        price: currentOrder.price||'',
+        paymentMethod: currentOrder.paymentMethod||'',
+        orderType: currentOrder.orderType||'',
+        notes: (currentOrder.notes||'').slice(0,400),
+      }),
     });
     const d = await r.json();
     if(!r.ok){ showToast('Twilio error: '+(d.error||'unknown'),'err'); return; }
@@ -1343,6 +1289,54 @@ async function loadCallbacks(){
   } catch(e){ console.error('loadCallbacks:',e); }
 }
 
+async function loadUrgentOrders(){
+  const container = document.getElementById('urgent-orders-container');
+  if(!container) return;
+  try{
+    const d = await (await fetch('/api/dashboard/urgent',{headers:authH()})).json();
+    let html = '';
+    if(d.overdue && d.overdue.length){
+      html += `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin-bottom:10px">🚨 Overdue / Due Today (${d.overdue.length})</div>`;
+      html += d.overdue.map(o=>`
+        <div class="cb-card urgent-cb" onclick="openDrawerForOrder('${o.pageId}')">
+          <div class="cb-icon">🚨</div>
+          <div class="cb-body">
+            <div class="cb-name">${o.customerName} — ${o.orderId}</div>
+            <div class="cb-reason">${o.garmentType||'Order'} due ${o.expectedDate||'?'}. Stage: ${o.tracker||'—'}.</div>
+            <div class="cb-meta">
+              ${o.orderType==='Expedited'?'<span class="badge b-exp">Expedited</span>':'<span class="badge b-reg">Regular</span>'}
+              ${o.paymentMethod?`<span class="badge b-paid">Paid · ${o.paymentMethod}</span>`:'<span class="badge b-unpaid">Unpaid${o.price?' · $'+o.price:''}</span>'}
+              <span style="font-family:var(--fm);font-size:.72rem;color:var(--muted)">Expected ${o.expectedDate}</span>
+            </div>
+          </div>
+          <div class="cb-actions">
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawerForOrder('${o.pageId}')">View</button>
+          </div>
+        </div>`).join('');
+    }
+    if(d.readyForPickup && d.readyForPickup.length){
+      html += `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:${d.overdue?.length?'18px':0} 0 10px">⏰ Ready for Pickup (${d.readyForPickup.length})</div>`;
+      html += d.readyForPickup.map(o=>`
+        <div class="cb-card" onclick="openDrawerForOrder('${o.pageId}')">
+          <div class="cb-icon">⏰</div>
+          <div class="cb-body">
+            <div class="cb-name">${o.customerName} — ${o.orderId}</div>
+            <div class="cb-reason">${o.garmentType||'Order'} ready. Customer not yet collected.</div>
+            <div class="cb-meta">
+              ${o.orderType==='Expedited'?'<span class="badge b-exp">Expedited</span>':'<span class="badge b-reg">Regular</span>'}
+              ${o.paymentMethod?`<span class="badge b-paid">Paid · ${o.paymentMethod}</span>`:'<span class="badge b-unpaid">Unpaid</span>'}
+              ${o.expectedDate?`<span style="font-family:var(--fm);font-size:.72rem;color:var(--muted)">Due ${o.expectedDate}</span>`:''}
+            </div>
+          </div>
+          <div class="cb-actions">
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawerForOrder('${o.pageId}')">View</button>
+          </div>
+        </div>`).join('');
+    }
+    container.innerHTML = html || '';
+  } catch(e){ console.error('loadUrgentOrders:',e); container.innerHTML=''; }
+}
+
 async function savePhone(id, phone){
   try{
     await fetch(`/api/dashboard/callbacks/${id}/phone`,{method:'PATCH',headers:jsonH(),body:JSON.stringify({phone})});
@@ -1354,11 +1348,20 @@ async function callNow(id, customerName, orderId, reason){
   const phoneEl = document.getElementById('phone-'+id);
   const phone = phoneEl ? phoneEl.value.trim() : '';
   if(!phone){ showToast('Enter a phone number first','err'); return; }
+  const order = allOrders.find(o => o.orderId === orderId) || {};
   try{
     showToast('Calling…','');
     const r = await fetch(`/api/dashboard/callbacks/${id}/call`,{
       method:'POST', headers:jsonH(),
-      body: JSON.stringify({phone, customerName, orderId, reason}),
+      body: JSON.stringify({
+        phone, customerName, orderId, reason,
+        garmentType: order.garmentType||'',
+        trackerStage: order.tracker||'',
+        price: order.price||'',
+        paymentMethod: order.paymentMethod||'',
+        orderType: order.orderType||'',
+        notes: (order.notes||'').slice(0,400),
+      }),
     });
     const d = await r.json();
     if(!r.ok){ showToast('Call failed: '+(d.error||''),'err'); return; }

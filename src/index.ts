@@ -633,7 +633,10 @@ worker.sync("callbackPoller", {
 
 			let result = "Called";
 			try {
-				const callUrl = `${base}/voice?outbound=true&customerName=${encodeURIComponent(customerName)}&orderId=${encodeURIComponent(orderId)}&reason=${encodeURIComponent(reason)}`;
+				const callParams = new URLSearchParams({
+						outbound: "true", customerName, orderId, reason: reason || "",
+					});
+					const callUrl = `${base}/voice?${callParams.toString()}`;
 				const creds = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 				const r = await fetch(
 					`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
@@ -718,7 +721,18 @@ worker.sync("pickupPoller", {
 
 			let result = "Called";
 			try {
-				const callUrl = `${base}/voice?outbound=true&customerName=${encodeURIComponent(customerName)}&orderId=${encodeURIComponent(orderId)}&reason=${encodeURIComponent("Your order is ready for pickup")}`;
+				const garmentType = getText(p["GARMENT_TYPE"]);
+				const orderType   = getText(p["ORDER_TYPE"]);
+				const paymentMethod = getText(p["PAYMENT_METHOD"]);
+				const price       = p["ORDER_PRICE"]?.number ?? "";
+				const expectedDate = p["EXPECTED_DATE"]?.date?.start ?? "";
+				const pickupParams = new URLSearchParams({
+					outbound: "true", customerName, orderId,
+					reason: "Your order is ready for pickup",
+					garmentType, orderType, trackerStage: "Ready for Pickup",
+					price: String(price), paymentMethod, expectedDate,
+				});
+				const callUrl = `${base}/voice?${pickupParams.toString()}`;
 				const creds = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 				const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`, {
 					method: "POST",
