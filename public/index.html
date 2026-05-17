@@ -803,41 +803,10 @@ function authH(){ return {Authorization: 'Bearer ' + (localStorage.getItem('dash
 function jsonH(){ return {...authH(), 'Content-Type':'application/json'} }
 
 /* ─── Auth ────────────────────────────────────────────────────────────────── */
-// Init — check stored token, show login if missing
 document.addEventListener('DOMContentLoaded', async () => {
-  const stored = localStorage.getItem('dashboard_token');
-  if(stored){
-    // Verify token is still valid
-    const ok = await API.auth(stored).then(r=>r.ok).catch(()=>false);
-    if(ok){
-      document.getElementById('login-screen')?.remove();
-      document.getElementById('dashboard').style.display='flex';
-      await Promise.all([loadStats(), loadOrders({status:'OPEN'}), loadPrices()]);
-      return;
-    }
-  }
-  // Show login
-  const ls = document.createElement('div');
-  ls.id='login-screen';
-  ls.style.cssText='position:fixed;inset:0;background:#F5F4F0;display:flex;align-items:center;justify-content:center;z-index:9999';
-  ls.innerHTML=`<div style="text-align:center;width:320px">
-    <div style="font-family:\'Times New Roman\',serif;font-size:1.8rem;font-weight:700;margin-bottom:32px">Charlie\'s Cleaners</div>
-    <input id="tok" type="password" placeholder="Passphrase" style="width:100%;padding:10px 14px;border:1.5px solid #ccc;border-radius:2px;font-size:1rem;font-family:system-ui;outline:none;background:#fff;margin-bottom:12px" onkeydown="if(event.key===\'Enter\')doLogin()"/>
-    <button onclick="doLogin()" style="width:100%;padding:10px;background:#0D0D0D;color:#fff;border:none;font-family:\'Times New Roman\',serif;font-size:1rem;font-weight:700;cursor:pointer">Sign in</button>
-    <div id="login-err" style="color:#c00;font-size:.82rem;margin-top:8px"></div>
-  </div>`;
-  document.body.appendChild(ls);
-});
-async function doLogin(){
-  const v=document.getElementById('tok').value.trim();
-  if(!v) return;
-  const ok=await API.auth(v).then(r=>r.ok).catch(()=>false);
-  if(!ok){ document.getElementById('login-err').textContent='Wrong passphrase'; return; }
-  localStorage.setItem('dashboard_token',v);
-  document.getElementById('login-screen').remove();
   document.getElementById('dashboard').style.display='flex';
   await Promise.all([loadStats(), loadOrders({status:'OPEN'}), loadPrices()]);
-}
+});
 
 /* ─── Clock ───────────────────────────────────────────────────────────────── */
 function startClock(){ tick(); setInterval(tick, 1000); }
