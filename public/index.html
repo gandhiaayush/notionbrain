@@ -1391,9 +1391,9 @@ async function loadCallLog(){
     el.innerHTML = valid.slice(0,10).map(c=>`
       <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
         <div style="flex:1;min-width:0">
-          <div style="font-size:.85rem;font-weight:600">${c.customer}</div>
-          <div style="font-size:.75rem;color:var(--muted);font-family:var(--fm)">${c.phone??'—'} · ${c.calledAt??'?'}</div>
-          ${c.reason?`<div style="font-size:.75rem;color:var(--muted);font-style:italic">${c.reason}</div>`:''}
+          <div style="font-size:.88rem;font-weight:700;font-family:var(--fh)">${c.customer}</div>
+          <div style="font-size:.75rem;color:var(--muted);font-family:var(--fb)">${c.phone??'—'} · ${c.calledAt??'?'}</div>
+          ${c.reason?`<div style="font-size:.75rem;color:var(--muted);font-family:var(--fb);font-style:italic">${c.reason}</div>`:''}
         </div>
         <span class="badge ${c.result==='Called'?'b-open':'b-unpaid'}" style="font-size:.65rem">${c.result}</span>
       </div>`).join('');
