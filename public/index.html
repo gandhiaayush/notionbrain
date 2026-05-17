@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Charlie's Cleaners — Owner Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ─── Tokens ──────────────────────────────────────────────────────────── */
+:root{
+  --bg:#F5F4F0;--black:#0D0D0D;--surface:#FFFFFF;--border:#D8D5CC;
+  --muted:#888;--red:#0D0D0D;--orange:#0D0D0D;--green:#0D0D0D;
+  --blue:#0D0D0D;--yellow:#0D0D0D;
+  --shadow:0 1px 3px rgba(0,0,0,.07);--shadow-lg:0 4px 16px rgba(0,0,0,.1);
+  --r:2px;--rs:2px;--rp:2px;
+  --fh:"Times New Roman",Georgia,serif;--fb:system-ui,-apple-system,sans-serif;--fm:"Courier New",monospace;
+  --tab-h:44px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{background:var(--bg);color:var(--black);font-family:var(--fb);min-height:100vh}
+
+/* ─── Login ───────────────────────────────────────────────────────────── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow-lg);
+  padding:48px 44px 44px;width:400px;text-align:center;border:1.5px solid var(--border)}
+.login-dh{width:120px;height:100px;margin:0 auto 20px}
+.login-title{font-family:var(--fh);font-size:1.65rem;font-weight:900;letter-spacing:-.3px}
+.login-sub{color:var(--muted);font-size:.9rem;margin:6px 0 28px;font-style:italic}
+.login-label{text-align:left;font-size:.75rem;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:block}
+.login-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--rs);
+  font-family:var(--fm);font-size:.9rem;background:var(--bg);outline:none;
+  transition:border-color .15s;letter-spacing:.08em}
+.login-input:focus{border-color:var(--orange)}
+.login-btn{width:100%;margin-top:18px;padding:12px;background:var(--black);color:var(--surface);
+  border:none;border-radius:var(--rs);font-family:var(--fh);font-size:1rem;font-weight:800;
+  cursor:pointer;transition:background .15s,transform .1s}
+.login-btn:hover{background:#333}
+.login-footer{margin-top:14px;font-size:.75rem;color:var(--muted)}
+
+/* ─── App Shell ───────────────────────────────────────────────────────── */
+#dashboard{flex-direction:column;height:100vh;overflow:hidden}
+
+/* ─── Header ──────────────────────────────────────────────────────────── */
+.hdr{background:var(--surface);color:var(--black);border-bottom:2px solid var(--black);padding:0 28px;height:54px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:50;flex-shrink:0}
+.hdr-brand{display:flex;align-items:center;gap:10px;font-family:var(--fh);font-weight:700;font-size:1.25rem;letter-spacing:-.5px}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-status{display:flex;align-items:center;gap:5px;font-size:.72rem;
+  color:#888;font-family:var(--fm)}
+.hdr-dot{width:7px;height:7px;border-radius:50%;background:var(--black)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 2px rgba(42,157,143,.3)}
+  50%{box-shadow:0 0 0 5px rgba(42,157,143,.1)}}
+.hdr-time{font-family:var(--fm);font-size:.72rem;color:#777}
+.icon-btn{background:transparent;border:1px solid var(--border);color:var(--muted);
+  padding:5px 12px;border-radius:var(--rp);font-size:.78rem;cursor:pointer;
+  transition:border-color .15s,color .15s;font-family:var(--fb)}
+.icon-btn:hover{border-color:var(--black);color:var(--black)}
+.icon-btn.logout:hover{border-color:var(--red);color:var(--red)}
+.btn-ask{background:var(--orange);color:var(--black);border:none;
+  padding:6px 14px;border-radius:var(--rp);font-family:var(--fh);
+  font-weight:800;font-size:.82rem;cursor:pointer;
+  transition:background .15s,transform .1s;display:flex;align-items:center;gap:6px}
+.btn-ask:hover{background:#e8934e;transform:translateY(-1px)}
+
+/* ─── Tab Bar ─────────────────────────────────────────────────────────── */
+.tab-bar{background:var(--surface);border-bottom:1.5px solid var(--border);
+  padding:0 28px;display:flex;align-items:flex-end;height:var(--tab-h);
+  flex-shrink:0;gap:0}
+.tab{padding:0 20px;height:var(--tab-h);display:flex;align-items:center;gap:7px;font-family:var(--fh);font-weight:400;font-size:.95rem;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);transition:color .15s,border-color .15s;white-space:nowrap;user-select:none;letter-spacing:.01em}
+.tab:hover{color:var(--black)}
+.tab.active{color:var(--black);border-bottom-color:var(--black)}
+.tab-badge{background:var(--red);color:white;font-size:.65rem;font-weight:800;
+  padding:2px 6px;border-radius:var(--rp);font-family:var(--fb);min-width:18px;
+  text-align:center}
+.tab-badge.warn{background:var(--orange)}
+
+/* ─── Content Area ────────────────────────────────────────────────────── */
+.content-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.tab-panel{display:none;flex:1;overflow-y:auto;padding:24px 28px}
+.tab-panel.active{display:block}
+
+/* ─── Stat Cards ──────────────────────────────────────────────────────── */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.sc{background:var(--surface);border-radius:0;padding:16px 20px;border:1px solid var(--border);box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:14px;cursor:default}
+.sc:hover{box-shadow:var(--shadow);}
+.sc-icon{font-size:1.8rem;width:44px;height:44px;display:flex;align-items:center;
+  justify-content:center;border-radius:10px;background:var(--bg);flex-shrink:0}
+.sc-val{font-family:var(--fh);font-size:2rem;font-weight:700;line-height:1}
+.sc-lbl{font-size:.65rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px;font-family:var(--fb)}
+.sc.urgent .sc-val{color:var(--black)}
+.sc.warn .sc-val{color:var(--black)}
+.sc.good .sc-val{color:var(--black)}
+.sc.info .sc-val{color:var(--black)}
+
+/* ─── Skeleton loader ─────────────────────────────────────────────────── */
+.skeleton{background:linear-gradient(90deg,#1E1E26 25%,#252530 50%,#1E1E26 75%);
+  background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ─── Filters ─────────────────────────────────────────────────────────── */
+.filters-bar{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px 18px;margin-bottom:18px;box-shadow:var(--shadow)}
+.filters-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.fi{padding:7px 11px;border:1.5px solid var(--border);border-radius:var(--rs);
+  font-family:var(--fb);font-size:.85rem;background:var(--bg);outline:none;
+  transition:border-color .15s}
+.fi:focus{border-color:var(--orange)}
+.fi-grow{flex:1;min-width:180px}
+.fi-sm{min-width:120px}
+.fi-date{font-family:var(--fm);font-size:.78rem;min-width:125px}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────── */
+.btn{padding:7px 16px;border-radius:var(--rs);font-family:var(--fb);font-weight:500;font-size:.85rem;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;letter-spacing:.01em}
+.btn-primary{background:var(--black);color:#fff}
+.btn-primary:hover{background:#333}
+.btn-ghost{background:transparent;color:var(--black);border:1px solid var(--black)}
+.btn-ghost:hover{background:var(--black);color:#fff}
+.btn-sm{padding:5px 11px;font-size:.78rem}
+.btn-danger{background:transparent;color:var(--black);border:1px solid var(--black);font-weight:500}
+.btn-danger:hover{background:var(--black);color:white}
+
+/* ─── Table ───────────────────────────────────────────────────────────── */
+.table-wrap{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.tw-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:13px 18px;border-bottom:1.5px solid var(--border)}
+.tw-title{font-family:var(--fh);font-weight:700;font-size:1rem;letter-spacing:-.3px}
+.tw-meta{font-size:.78rem;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;padding:9px 13px;font-size:.68rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--surface);border-bottom:2px solid var(--black);white-space:nowrap;font-family:var(--fb)}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#F0EFE8}
+tbody tr.active-row{background:#EDECEA}
+tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
+.td-mono{font-family:var(--fm);font-size:.78rem;color:var(--muted)}
+.td-name{font-weight:600}
+.tw-foot{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 18px;border-top:1.5px solid var(--border);background:var(--bg)}
+.pag{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--muted)}
+.pg-btn{background:var(--surface);border:1.5px solid var(--border);color:var(--black);
+  padding:4px 11px;border-radius:var(--rs);font-size:.8rem;cursor:pointer;
+  font-family:var(--fb);transition:border-color .15s}
+.pg-btn:hover{border-color:var(--orange)}
+.pg-btn:disabled{opacity:.4;cursor:default}
+
+/* ─── Badges ──────────────────────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:var(--rp);
+  font-size:.7rem;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+.b-open{background:var(--black);color:#fff;border-color:var(--black)}
+.b-closed{background:transparent;color:var(--muted);border-color:var(--border)}
+.b-exp{background:var(--black);color:#fff;border-color:var(--black)}
+.b-reg{background:transparent;color:var(--black);border-color:var(--black)}
+.b-unpaid{background:transparent;color:var(--black);border-color:var(--black);font-style:italic}
+.b-paid{background:transparent;color:var(--black);border-color:var(--border)}
+.b-cb{background:transparent;color:var(--black);border-color:var(--black)}
+.b-g{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+
+/* ─── Tracker pill ────────────────────────────────────────────────────── */
+.tp{display:flex;align-items:center;gap:3px;font-size:.73rem;white-space:nowrap}
+.td2{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.td2.done{background:var(--black)}
+.td2.act{background:var(--black);box-shadow:0 0 0 2px rgba(0,0,0,.2)}
+.td2.todo{background:var(--border)}
+.tp-lbl{margin-left:5px;font-weight:600;color:var(--black);font-size:.73rem}
+.tp-lbl.done-lbl{color:var(--black)}
+
+/* ─── Revenue Tab ─────────────────────────────────────────────────────── */
+.rev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+.rev-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:22px;box-shadow:var(--shadow)}
+.rev-card-title{font-size:.72rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--muted);margin-bottom:8px}
+.rev-amount{font-family:var(--fh);font-size:2.2rem;font-weight:900;color:var(--black)}
+.rev-sub{font-size:.78rem;color:var(--muted);margin-top:4px}
+.rev-delta{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;
+  font-weight:700;margin-top:6px;padding:2px 8px;border-radius:var(--rp)}
+.rev-delta.up{background:#0A2520;color:var(--green)}
+.rev-delta.dn{background:#FEE8EA;color:var(--red)}
+.pay-bar-wrap{background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow);margin-bottom:22px}
+.pay-bar-title{font-family:var(--fh);font-weight:800;font-size:.9rem;margin-bottom:16px}
+.pay-method{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.pay-name{font-size:.82rem;font-weight:600;width:55px;flex-shrink:0}
+.pay-track{flex:1;background:var(--bg);border-radius:var(--rp);height:10px;overflow:hidden}
+.pay-fill{height:100%;border-radius:var(--rp);transition:width .6s ease}
+.pay-amt{font-family:var(--fm);font-size:.78rem;color:var(--muted);width:50px;text-align:right}
+
+/* ─── Callbacks Tab ───────────────────────────────────────────────────── */
+.cb-card{background:var(--surface);border:1px solid var(--border);border-radius:0;
+  padding:16px 20px;box-shadow:var(--shadow);margin-bottom:12px;
+  display:flex;align-items:flex-start;gap:16px;cursor:pointer;transition:all .15s}
+.cb-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.cb-card.urgent-cb{border-left:3px solid var(--black)}
+.cb-card.warn-cb{border-left:3px solid var(--black)}
+.cb-icon{font-size:1.6rem;flex-shrink:0;padding-top:2px}
+.cb-body{flex:1;min-width:0}
+.cb-name{font-family:var(--fh);font-weight:700;font-size:.95rem}
+.cb-reason{font-size:.85rem;color:var(--muted);margin-top:3px;font-style:italic}
+.cb-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.cb-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+
+/* ─── Drawer ──────────────────────────────────────────────────────────── */
+.ov{position:fixed;inset:0;background:rgba(26,26,26,.35);z-index:200;
+  opacity:0;pointer-events:none;transition:opacity .25s}
+.ov.open{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:460px;background:var(--surface);
+  box-shadow:-8px 0 40px rgba(26,26,26,.18);z-index:201;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
+.dw-hdr{background:var(--black);color:#fff;border-bottom:2px solid var(--black);padding:18px 22px;
+  display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.dw-id{font-family:var(--fm);font-size:.75rem;color:#aaa;margin-bottom:3px}
+.dw-name{font-family:var(--fh);font-size:1.3rem;font-weight:700}
+.dw-phone{font-family:var(--fm);font-size:.75rem;color:#aaa;margin-top:2px}
+.dw-close{background:none;border:1.5px solid #555;color:#ccc;width:28px;height:28px;
+  border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;
+  justify-content:center;transition:all .15s;flex-shrink:0}
+.dw-close:hover{border-color:var(--red);color:var(--red)}
+.dw-body{flex:1;overflow-y:auto;padding:20px}
+.dw-sec{margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.dw-sec:last-child{border-bottom:none;margin-bottom:0}
+.dw-sec-t{font-family:var(--fb);font-weight:400;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.meta-item label{font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);display:block;margin-bottom:3px}
+.meta-item .val{font-size:.9rem;font-weight:600}
+.meta-item .val.mono{font-family:var(--fm);font-size:.82rem}
+.tracker-steps{display:flex;gap:0;position:relative}
+.tstep{flex:1;text-align:center;position:relative;cursor:pointer}
+.tstep::before{content:'';position:absolute;top:13px;left:calc(-50%);right:50%;
+  height:2px;background:var(--border);z-index:0}
+.tstep:first-child::before{display:none}
+.tstep.done::before{background:var(--green)}
+.tstep.act::before{background:var(--orange)}
+.tstep-dot{width:26px;height:26px;border-radius:50%;background:var(--surface);border:2px solid var(--border);
+  margin:0 auto 5px;display:flex;align-items:center;justify-content:center;
+  position:relative;z-index:1;font-size:.68rem;font-weight:700;color:var(--muted);
+  transition:background .2s,color .2s,box-shadow .2s}
+.tstep.done .tstep-dot{background:var(--black);color:white}
+.tstep.act  .tstep-dot{background:var(--black);color:white;box-shadow:0 0 0 3px rgba(0,0,0,.15)}
+.tstep-lbl{font-size:.6rem;font-weight:600;color:var(--muted);line-height:1.2}
+.tstep.done .tstep-lbl{color:var(--black)}
+.tstep.act  .tstep-lbl{color:var(--black)}
+.form-row{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap;margin-bottom:9px}
+.fg{display:flex;flex-direction:column;gap:4px;flex:1;min-width:110px}
+.fl{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fsel,.finp{padding:7px 9px;border:1.5px solid var(--border);border-radius:var(--rs);
+  font-family:var(--fb);font-size:.85rem;background:var(--bg);outline:none;width:100%;
+  transition:border-color .15s}
+.fsel:focus,.finp:focus{border-color:var(--orange)}
+.notes-disp{background:var(--bg);border:1px solid var(--border);border-radius:0;
+  padding:10px;font-size:.82rem;line-height:1.6;min-height:60px;margin-bottom:8px}
+.note-row{display:flex;gap:8px}
+.note-inp{flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--rs);
+  font-size:.85rem;background:var(--bg);outline:none;font-family:var(--fb)}
+.note-inp:focus{border-color:var(--black)}
+
+/* ─── AI Chat Panel ───────────────────────────────────────────────────── */
+.ai-panel{position:fixed;bottom:0;left:0;right:0;z-index:150;
+  transform:translateY(calc(100% - 56px));transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.ai-panel.expanded{transform:translateY(0)}
+.ai-pull{background:var(--black);color:var(--surface);padding:0 28px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+  border-top:2px solid var(--border);user-select:none}
+.ai-pull-left{display:flex;align-items:center;gap:10px}
+.ai-spark{font-size:1.1rem}
+.ai-pull-title{font-family:var(--fh);font-weight:800;font-size:.95rem}
+.ai-pull-hint{font-size:.75rem;color:#888;font-style:italic}
+.ai-pull-chevron{font-size:1rem;transition:transform .3s;color:#888}
+.ai-panel.expanded .ai-pull-chevron{transform:rotate(180deg)}
+.ai-body{background:var(--surface);border-top:1.5px solid var(--border);
+  height:380px;display:flex;flex-direction:column;overflow:hidden}
+.ai-msgs{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.ai-msg{display:flex;gap:10px;align-items:flex-start}
+.ai-msg.user{flex-direction:row-reverse}
+.ai-bubble{max-width:75%;padding:11px 14px;border-radius:14px;
+  font-size:.88rem;line-height:1.55}
+.ai-msg.bot  .ai-bubble{background:var(--surface);border:1.5px solid var(--border);
+  border-bottom-left-radius:4px}
+.ai-msg.user .ai-bubble{background:var(--black);color:white;border-bottom-right-radius:4px}
+.ai-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.9rem;flex-shrink:0;margin-top:2px}
+.ai-msg.bot  .ai-avatar{background:var(--surface);border:1.5px solid var(--border)}
+.ai-msg.user .ai-avatar{background:#333}
+.ai-bubble strong{font-weight:700}
+.ai-bubble ul{margin:6px 0 0 16px}
+.ai-bubble li{margin-bottom:3px}
+.ai-bubble .ai-num{font-family:var(--fm);color:var(--orange);font-weight:700}
+.ai-input-area{padding:12px 16px;border-top:1.5px solid var(--border);
+  display:flex;gap:9px;align-items:flex-end;background:var(--surface)}
+.ai-textarea{flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--rs);
+  font-family:var(--fb);font-size:.9rem;background:var(--bg);outline:none;
+  resize:none;min-height:42px;max-height:120px;line-height:1.45;
+  transition:border-color .15s}
+.ai-textarea:focus{border-color:var(--orange)}
+.ai-send{background:var(--black);color:white;border:none;width:40px;height:40px;
+  border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:1rem;transition:background .15s;flex-shrink:0}
+.ai-send:hover{background:#333}
+.ai-send:disabled{opacity:.4;cursor:default}
+.ai-chips{display:flex;gap:7px;padding:10px 16px 0;flex-wrap:wrap}
+.ai-chip-group{display:flex;flex-direction:column;gap:6px;padding:10px 16px 0}
+.ai-chip-label{font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);padding-left:2px}
+.ai-chip-row{display:flex;gap:7px;flex-wrap:wrap}
+.ai-chip{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rp);
+  padding:4px 11px;font-size:.75rem;font-weight:600;cursor:pointer;
+  transition:border-color .15s,background .15s;white-space:nowrap;color:var(--black)}
+.ai-chip:hover{border-color:var(--orange);background:#fff8ed}
+.ai-chip.write{border-color:#E8DCC8;background:#FFF9EC}
+.ai-chip.write:hover{border-color:var(--orange);background:#fff3d0}
+.ai-thinking{display:flex;align-items:center;gap:4px;padding:4px 0}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);
+  animation:bounce .9s infinite}
+.ai-dot:nth-child(2){animation-delay:.18s}
+.ai-dot:nth-child(3){animation-delay:.36s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+/* Action card — shown after a write operation */
+.ai-action-card{background:#FFFBF0;border:1.5px solid var(--orange);border-radius:10px;
+  padding:10px 13px;margin-top:4px;font-size:.82rem}
+.ai-action-card-hdr{display:flex;align-items:center;gap:6px;font-family:var(--fh);
+  font-weight:800;font-size:.8rem;color:var(--orange);margin-bottom:6px}
+.ai-action-row{display:flex;align-items:center;gap:8px;padding:3px 0;
+  border-top:1px solid #f0e0c0;font-size:.78rem}
+.ai-action-row:first-of-type{border-top:none}
+.ai-action-kind{font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  padding:2px 7px;border-radius:var(--rp);flex-shrink:0}
+.ai-action-kind.write{background:#FFF0E0;color:var(--orange)}
+.ai-action-kind.create{background:#E8F4F0;color:var(--green)}
+.ai-action-kind.read{background:#EEF3FF;color:var(--blue)}
+
+/* ─── Price Modal ─────────────────────────────────────────────────────── */
+.mover{position:fixed;inset:0;background:rgba(26,26,26,.4);z-index:300;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.mover.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border-radius:0;border:2px solid var(--black);box-shadow:var(--shadow-lg);
+  width:500px;max-width:90vw;overflow:hidden;
+  transform:scale(.96) translateY(8px);transition:transform .2s}
+.mover.open .modal{transform:scale(1) translateY(0)}
+.modal-hdr{background:var(--black);color:var(--surface);padding:16px 22px;
+  display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-family:var(--fh);font-weight:900;font-size:1.05rem}
+.modal-close{background:none;border:1.5px solid #555;color:#ccc;width:26px;height:26px;
+  border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+.modal-body{padding:20px 22px;max-height:65vh;overflow-y:auto}
+.ptable{width:100%;border-collapse:collapse}
+.ptable th{text-align:left;padding:7px 9px;font-size:.7rem;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1.5px solid var(--border)}
+.ptable th:not(:first-child){text-align:right}
+.ptable td{padding:9px 9px;font-size:.88rem;border-bottom:1px solid var(--border)}
+.ptable td:not(:first-child){text-align:right}
+.ptable tr:last-child td{border-bottom:none}
+.p-reg{font-family:var(--fm);color:var(--blue);font-weight:500}
+.p-exp{font-family:var(--fm);color:var(--orange);font-weight:500}
+
+/* ─── Toast ───────────────────────────────────────────────────────────── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--surface);color:var(--black);border:1px solid var(--border);padding:10px 20px;border-radius:var(--rp);
+  font-size:.85rem;font-family:var(--fh);font-weight:700;box-shadow:var(--shadow-lg);
+  z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
+
+/* ─── Insights Tab ────────────────────────────────────────────────────── */
+.ins-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:22px}
+.ins-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:18px 20px;box-shadow:var(--shadow)}
+.ins-card-title{font-family:var(--fh);font-weight:800;font-size:.82rem;margin-bottom:14px;
+  display:flex;align-items:center;gap:7px}
+.stage-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.stage-name{font-size:.8rem;font-weight:600;width:110px;flex-shrink:0}
+.stage-bar-w{flex:1;background:var(--bg);border-radius:var(--rp);height:9px;overflow:hidden}
+.stage-fill{height:100%;border-radius:var(--rp)}
+.stage-count{font-family:var(--fm);font-size:.75rem;color:var(--muted);width:24px;text-align:right}
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{flex:1}
+.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:.8rem}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- LOGIN ───────────────────────────────────────────────────────────────── -->
+
+
+<!-- DASHBOARD ───────────────────────────────────────────────────────────── -->
+<div id="dashboard" style="display:flex">
+  <!-- Header -->
+  <header class="hdr">
+    <div class="hdr-brand">
+      🐾 Charlie's Cleaners
+      <span style="font-size:.68rem;color:#4A4A58;font-weight:400;font-family:var(--fm);margin-left:2px">v2</span>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-status">
+        <div class="hdr-dot"></div>
+        <span>Notion Live</span>
+      </div>
+      <span class="hdr-time" id="hdr-time"></span>
+      <button class="icon-btn" title="Refresh all" onclick="showToast('Refreshed ✓','ok')">↻ Refresh</button>
+
+
+    </div>
+  </header>
+
+  <!-- Tab Bar -->
+  <nav class="tab-bar">
+    <div class="tab active" data-tab="orders" onclick="switchTab('orders')">
+      📋 Orders
+    </div>
+    
+    <div class="tab" data-tab="callbacks" onclick="switchTab('callbacks')">
+      📞 Callbacks <span class="tab-badge" id="tb-cb">0</span>
+    </div>
+    
+  </nav>
+
+  <!-- Content -->
+  <div class="content-area">
+
+    <!-- ── ORDERS TAB ──────────────────────────────────────────────────── -->
+    <div class="tab-panel active" id="tab-orders">
+      <!-- Stats -->
+      <div class="stats-bar">
+        <div class="sc">
+          <div class="sc-icon">🐾</div>
+          <div><div class="sc-val" data-stat="open">—</div><div class="sc-lbl">Open Orders</div></div>
+        </div>
+        <div class="sc warn">
+          <div class="sc-icon">🚀</div>
+          <div><div class="sc-val" data-stat="expedited">—</div><div class="sc-lbl">Expedited</div></div>
+        </div>
+        <div class="sc urgent">
+          <div class="sc-icon">💳</div>
+          <div><div class="sc-val" data-stat="unpaid">—</div><div class="sc-lbl">Unpaid</div></div>
+        </div>
+        <div class="sc info">
+          <div class="sc-icon">📞</div>
+          <div><div class="sc-val" data-stat="callbacks">—</div><div class="sc-lbl">Callbacks</div></div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-bar">
+        <div class="filters-row">
+          <input class="fi fi-grow" type="text" placeholder="🔍  Search name, phone, order ID…" data-api-param="q"/>
+          <select class="fi fi-sm" data-api-param="status">
+            <option value="">All Statuses</option>
+            <option>OPEN</option><option>CLOSED</option>
+          </select>
+          <select class="fi fi-sm" data-api-param="stage">
+            <option value="">All Stages</option>
+            <option>Received</option><option>Sorting</option><option>Cleaning</option>
+            <option>Pressing</option><option>Ready for Pickup</option><option>Delivered</option>
+          </select>
+          <select class="fi fi-sm" data-api-param="garmentType">
+            <option value="">All Garments</option>
+            <option>Shirt</option><option>Pants</option><option>Dress</option>
+            <option>Suit</option><option>Jacket</option><option>Coat</option>
+            <option>Skirt</option><option>Other</option>
+          </select>
+          <select class="fi fi-sm" data-api-param="paymentMethod">
+            <option value="">All Payments</option>
+            <option>Cash</option><option>Card</option><option>Venmo</option>
+            <option>Zelle</option><option>Unpaid</option>
+          </select>
+          <select class="fi fi-sm" data-api-param="orderType">
+            <option value="">All Types</option>
+            <option>Regular</option><option>Expedited</option>
+          </select>
+          <input class="fi fi-date" type="date" data-api-param="from" title="From"/>
+          <input class="fi fi-date" type="date" data-api-param="to" title="To"/>
+          <button class="btn btn-primary" onclick="applyFilters()">Search</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <div class="tw-hdr">
+          <div class="tw-title">Orders</div>
+          <div style="display:flex;gap:9px;align-items:center">
+            <span class="tw-meta" id="tw-meta">Loading…</span>
+            <button class="btn btn-ghost btn-sm" onclick="openPriceModal()">💰 Price List</button>
+            <button class="btn btn-primary btn-sm" onclick="openNewOrderModal()">+ New Order</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Order ID</th><th>Customer</th><th>Garment</th><th>Type</th>
+            <th>Stage</th><th>Expected</th><th>Price</th><th>Payment</th><th>Status</th>
+          </tr></thead>
+          <tbody id="orders-tbody"><tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">Loading…</td></tr></tbody>
+        </table>
+        <div class="tw-foot">
+          <div class="pag">
+            <button class="pg-btn" id="pg-prev" onclick="changePage(-1)" disabled>← Prev</button>
+            <span id="pg-label">—</span>
+            <button class="pg-btn" id="pg-next" onclick="changePage(1)">Next →</button>
+          </div>
+          <span class="tw-meta" id="tw-meta">Loading…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CALLBACKS TAB ───────────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-callbacks">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div style="font-family:var(--fh);font-weight:900;font-size:1.1rem">Pending Callbacks</div>
+      </div>
+      <div id="callbacks-container"><div style="text-align:center;padding:40px;color:var(--muted)">Click Callbacks tab to load…</div></div>
+
+      <!-- Call Log -->
+      <div style="margin-top:28px">
+        <div style="font-family:var(--fh);font-weight:800;font-size:.9rem;margin-bottom:12px">📋 Recent Call Log</div>
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 18px;box-shadow:var(--shadow)">
+          <div id="call-log"></div>
+        </div>
+      </div>
+      <div style="margin-top:24px">
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin-bottom:10px">🚨 Overdue / Due Today</div>
+      <div class="cb-card urgent-cb" onclick="openDrawer('o1')">
+        <div class="cb-icon">🚨</div>
+        <div class="cb-body">
+          <div class="cb-name">Angela Torres — #DCL-2838</div>
+          <div class="cb-reason">Expedited coat — due today (2026-05-17). Still in Sorting stage.</div>
+          <div class="cb-meta">
+            <span class="badge b-exp">Expedited</span>
+            <span class="badge b-unpaid">Unpaid · $33</span>
+            <span class="badge b-cb">📞 Callback pending</span>
+          </div>
+        </div>
+        <div class="cb-actions">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();showToast('Stage updated ✓','ok')">Advance Stage</button>
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawer('o1')">View</button>
+        </div>
+      </div>
+
+      <div class="cb-card urgent-cb" onclick="openDrawer('o1')">
+        <div class="cb-icon">⏰</div>
+        <div class="cb-body">
+          <div class="cb-name">Robert Liu — #DCL-2839</div>
+          <div class="cb-reason">Shirt ready for pickup since yesterday. Customer not yet collected.</div>
+          <div class="cb-meta">
+            <span class="badge b-reg">Regular</span>
+            <span class="badge b-paid">Paid · Venmo</span>
+            <span style="font-family:var(--fm);font-size:.72rem;color:var(--muted)">Ready since 2026-05-15</span>
+          </div>
+        </div>
+        <div class="cb-actions">
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showToast('Reminder queued','ok')">Remind</button>
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawer('o1')">View</button>
+        </div>
+      </div>
+
+      <!-- Callbacks requested -->
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--orange);margin:18px 0 10px">📞 Callback Requested</div>
+      <div class="cb-card warn-cb" onclick="openDrawer('o1')">
+        <div class="cb-icon">📞</div>
+        <div class="cb-body">
+          <div class="cb-name">Angela Torres — #DCL-2838</div>
+          <div class="cb-reason">"Wants to confirm pickup time for expedited coat. Called at 8am."</div>
+          <div class="cb-meta">
+            <span class="badge b-g">Coat</span>
+            <span class="td-mono" style="font-size:.75rem;color:var(--muted)">+1 (415) 555-7722</span>
+          </div>
+        </div>
+        <div class="cb-actions">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();showToast('Callback logged ✓','ok')">Mark Done</button>
+        </div>
+      </div>
+      <div class="cb-card warn-cb" onclick="openDrawer('o1')">
+        <div class="cb-icon">📞</div>
+        <div class="cb-body">
+          <div class="cb-name">Priya Mehta — #DCL-2834</div>
+          <div class="cb-reason">"Wants to know if dress will be ready by Saturday for wedding."</div>
+          <div class="cb-meta">
+            <span class="badge b-g">Dress</span>
+            <span class="td-mono" style="font-size:.75rem;color:var(--muted)">+1 (510) 555-6610</span>
+          </div>
+        </div>
+        <div class="cb-actions">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();showToast('Callback logged ✓','ok')">Mark Done</button>
+        </div>
+      </div>
+    </div>
+    </div><!-- /callbacks extra -->
+
+    </div><!-- /content-area -->
+</div><!-- /dashboard -->
+
+<!-- ORDER DRAWER ─────────────────────────────────────────────────────────── -->
+<div class="ov" id="dw-ov" onclick="closeDrawer()"></div>
+<div class="drawer" id="order-drawer">
+  <div class="dw-hdr">
+    <div>
+      <div class="dw-id" id="dw-order-id">#—</div>
+      <div class="dw-name" id="dw-cust-name" style="color:#fff;font-family:'Times New Roman',serif;font-size:1.2rem;font-weight:700;min-height:1.4em">—</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <input id="dw-cust-phone" style="font-family:var(--fm);font-size:.75rem;background:transparent;border:none;border-bottom:1px solid #444;color:#aaa;padding:2px 0;outline:none;flex:1;min-width:0" placeholder="no phone" onkeydown="if(event.key==='Enter'){saveOrderPhone(this.value);this.blur()}"/>
+        <button onclick="saveOrderPhone(document.getElementById('dw-cust-phone').value)" style="text-decoration:none;background:transparent;border:1px solid #555;color:#aaa;padding:3px 10px;cursor:pointer;font-size:.72rem;font-family:var(--fb);letter-spacing:.05em;white-space:nowrap;line-height:normal">save</button>
+        <button id="dw-call-btn" onclick="callOrderNow()" style="text-decoration:none;background:#fff;border:none;color:#000;padding:3px 12px;cursor:pointer;font-size:.75rem;font-family:'Times New Roman',serif;font-weight:700;letter-spacing:.03em;white-space:nowrap;line-height:normal">Call</button>
+      </div>
+    </div>
+    <button class="dw-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="dw-body">
+
+    <div class="dw-sec">
+      <div class="dw-sec-t">Order Details</div>
+      <div class="meta-grid">
+        <div class="meta-item"><label>Garment</label><div class="val" id="dw-det-garment">—</div></div>
+        <div class="meta-item"><label>Type</label><div class="val" id="dw-det-type">—</div></div>
+        <div class="meta-item"><label>Price</label><div class="val mono" id="dw-det-price">—</div></div>
+        <div class="meta-item"><label>Expected</label><div class="val mono" id="dw-det-expected">—</div></div>
+        <div class="meta-item"><label>Status</label><div class="val" id="dw-det-status">—</div></div>
+        <div class="meta-item"><label>Payment</label><div class="val" id="dw-det-payment">—</div></div>
+      </div>
+    </div>
+
+    <div class="dw-sec">
+      <div class="dw-sec-t">Tracker Stage</div>
+      <div class="tracker-steps" id="dw-tracker-steps"></div>
+      <div style="margin-top:14px">
+        <div class="form-row">
+          <div class="fg"><label class="fl">Set stage</label>
+            <select class="fsel" id="dw-tracker-sel">
+              <option value="Received">Received</option>
+              <option value="Sorting">Sorting</option>
+              <option value="Cleaning">Cleaning</option>
+              <option value="Pressing">Pressing</option>
+              <option value="Ready for Pickup">Ready for Pickup</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="margin-top:auto" onclick="saveTracker()">Update</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dw-sec">
+      <div class="dw-sec-t">Payment</div>
+      <div class="form-row">
+        <div class="fg"><label class="fl">Method</label>
+          <select class="fsel" id="dw-payment-method">
+            <option value="Unpaid">Unpaid</option><option value="Cash">Cash</option>
+            <option value="Card">Card</option><option value="Venmo">Venmo</option>
+            <option value="Zelle">Zelle</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Date</label>
+          <input class="finp" id="dw-payment-date" type="date" style="font-family:var(--fm);font-size:.8rem"/>
+        </div>
+        <button class="btn btn-primary" style="margin-top:auto" onclick="savePayment()">Save</button>
+      </div>
+    </div>
+
+    <div class="dw-sec">
+      <div class="dw-sec-t">Price & Date</div>
+      <div class="form-row">
+        <div class="fg"><label class="fl">Price ($)</label>
+          <input class="finp" id="dw-price-inp" type="number" min="0" step="0.01" style="font-family:var(--fm)" placeholder="0.00"/>
+        </div>
+        <div class="fg"><label class="fl">Expected Date</label>
+          <input class="finp" id="dw-date-inp" type="date" style="font-family:var(--fm);font-size:.8rem"/>
+        </div>
+        <button class="btn btn-primary" style="margin-top:auto" onclick="savePriceDate()">Save</button>
+      </div>
+    </div>
+
+    <div class="dw-sec">
+      <div class="dw-sec-t">Garment Type</div>
+      <div class="form-row">
+        <div class="fg">
+          <select class="fsel" id="dw-garment-sel">
+            <option value="">— Select —</option>
+            <option>Shirt</option><option>Pants</option><option>Dress</option>
+            <option>Suit</option><option>Jacket</option><option>Coat</option>
+            <option>Skirt</option><option>Other</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost" style="margin-top:auto" onclick="editGarmentAction()">✏️ Update</button>
+      </div>
+    </div>
+
+    <div class="dw-sec">
+      <div class="dw-sec-t">Notes</div>
+      <div class="notes-disp" id="dw-notes-disp">(no notes yet)</div>
+      <div class="note-row">
+        <input class="note-inp" id="dw-note-inp" type="text" placeholder="Append a note…"/>
+        <button class="btn btn-ghost" onclick="saveNote()">+ Add</button>
+      </div>
+    </div>
+
+    <div class="dw-sec">
+      <div class="dw-sec-t">Actions</div>
+      <div class="form-row">
+        <button class="btn btn-ghost" onclick="makeExpeditedAction()">🚀 Make Expedited</button>
+        <button class="btn btn-danger" onclick="requestCallbackAction()">📞 Log Callback</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+
+<!-- PRICE MODAL ──────────────────────────────────────────────────────────── -->
+<div class="mover" id="price-modal" onclick="closePriceModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div class="modal-title">💰 Price Schedule</div>
+      <button class="modal-close" onclick="closePriceModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- GET /api/dashboard/prices -->
+      <table class="ptable">
+        <thead><tr><th>Garment</th><th>Regular</th><th>Expedited</th></tr></thead>
+        <tbody id="price-tbody">
+          <tr><td style="font-weight:600">Shirt</td><td class="p-reg">$8.00</td><td class="p-exp">$12.00</td></tr>
+          <tr><td style="font-weight:600">Pants</td><td class="p-reg">$10.00</td><td class="p-exp">$15.00</td></tr>
+          <tr><td style="font-weight:600">Skirt</td><td class="p-reg">$10.00</td><td class="p-exp">$15.00</td></tr>
+          <tr><td style="font-weight:600">Dress</td><td class="p-reg">$18.00</td><td class="p-exp">$27.00</td></tr>
+          <tr><td style="font-weight:600">Jacket</td><td class="p-reg">$20.00</td><td class="p-exp">$30.00</td></tr>
+          <tr><td style="font-weight:600">Coat</td><td class="p-reg">$22.00</td><td class="p-exp">$33.00</td></tr>
+          <tr><td style="font-weight:600">Suit</td><td class="p-reg">$24.00</td><td class="p-exp">$36.00</td></tr>
+          <tr><td style="font-weight:600">Other</td><td class="p-reg">$15.00</td><td class="p-exp">$22.00</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;font-size:.75rem;color:var(--muted);text-align:center">
+        Source: <span style="font-family:var(--fm)">GET /api/dashboard/prices</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ORDER MODAL ──────────────────────────────────────────────────────── -->
+<div class="mover" id="new-order-modal" onclick="closeNewOrderModal()">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px;width:95%">
+    <div class="modal-hdr">
+      <div class="modal-title">➕ New Order</div>
+      <button class="modal-close" onclick="closeNewOrderModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px">
+        Type naturally — e.g. <em>"Maria Garcia +14085551234 suit expedited $36 due May 20"</em>
+      </p>
+      <textarea id="nlp-input" rows="3" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:var(--fb);font-size:.9rem;background:var(--bg);resize:vertical;outline:none"
+        placeholder="Customer name, phone, garment type, order type, price, due date…"
+        onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey))parseAndCreate()"></textarea>
+      <div id="nlp-preview" style="margin-top:10px;font-size:.82rem;color:var(--muted);background:var(--bg);border-radius:var(--rs);padding:8px 10px;display:none"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="closeNewOrderModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="parseAndCreate()">Create Order ↵</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST ─────────────────────────────────────────────────────────────────── -->
+<div class="toast" id="toast">Saved ✓</div>
+
+<script>
+/* ─── State ───────────────────────────────────────────────────────────────── */
+let aiOpen = false;
+let aiThinking = false;
+let toastT = null;
+
+/* ─── API contract — wire these to fetch() in React ──────────────────────── */
+// All endpoints are relative to /api/dashboard
+// Auth: Authorization: Bearer <localStorage.getItem('dashboard_token')>
+const API = {
+  auth:    (token)   => fetch('/api/dashboard/auth', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token})}),
+  orders:  (params)  => fetch('/api/dashboard/orders?' + new URLSearchParams(params), {headers: authH()}),
+  order:   (id)      => fetch(`/api/dashboard/orders/${id}`, {headers: authH()}),
+  stats:   ()        => fetch('/api/dashboard/stats', {headers: authH()}),
+  prices:  ()        => fetch('/api/dashboard/prices', {headers: authH()}),
+  tracker: (id, s)   => fetch(`/api/dashboard/orders/${id}/tracker`, {method:'PATCH', headers: jsonH(), body: JSON.stringify({stage: s})}),
+  payment: (id,m,d)  => fetch(`/api/dashboard/orders/${id}/payment`,  {method:'PATCH', headers: jsonH(), body: JSON.stringify({method:m, date:d})}),
+  note:    (id, n)   => fetch(`/api/dashboard/orders/${id}/note`,      {method:'PATCH', headers: jsonH(), body: JSON.stringify({note:n})}),
+  garment: (id, g)   => fetch(`/api/dashboard/orders/${id}/garment`,   {method:'PATCH', headers: jsonH(), body: JSON.stringify({garmentType:g})}),
+  price:   (id, p)   => fetch(`/api/dashboard/orders/${id}/price`,     {method:'PATCH', headers: jsonH(), body: JSON.stringify({price:p})}),
+  type:    (id, t)   => fetch(`/api/dashboard/orders/${id}/type`,      {method:'PATCH', headers: jsonH(), body: JSON.stringify({orderType:t})}),
+  date:    (id, d)   => fetch(`/api/dashboard/orders/${id}/date`,      {method:'PATCH', headers: jsonH(), body: JSON.stringify({expectedDate:d})}),
+  callback:(id, r)   => fetch(`/api/dashboard/orders/${id}/callback`,  {method:'PATCH', headers: jsonH(), body: JSON.stringify({reason:r})}),
+};
+function authH(){ return {Authorization: 'Bearer ' + (localStorage.getItem('dashboard_token')||'')} }
+function jsonH(){ return {...authH(), 'Content-Type':'application/json'} }
+
+/* ─── Auth ────────────────────────────────────────────────────────────────── */
+// Auto-init — no login needed for local staff tool
+localStorage.setItem('dashboard_token', 'charlies2026');
+document.addEventListener('DOMContentLoaded', async () => {
+  await Promise.all([loadStats(), loadOrders({status:'OPEN'}), loadPrices()]);
+});
+
+/* ─── Clock ───────────────────────────────────────────────────────────────── */
+function startClock(){ tick(); setInterval(tick, 1000); }
+function tick(){
+  const el = document.getElementById('hdr-time');
+  if(el) el.textContent = new Date().toLocaleString('en-US',{
+    weekday:'short', month:'short', day:'numeric',
+    hour:'2-digit', minute:'2-digit', hour12:true});
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────────────────── */
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id==='tab-'+name));
+  if(name==='callbacks') loadCallbacks();
+  if(name==='orders')    loadOrders(getFilters());
+}
+
+/* ─── Drawer ──────────────────────────────────────────────────────────────── */
+async function openDrawer(id){ await openDrawerForOrder(id); }
+async function openDrawerForOrder(pageId){
+  document.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('active-row'));
+  const row = document.getElementById('row-'+pageId);
+  if(row) row.classList.add('active-row');
+  document.getElementById('dw-ov').classList.add('open');
+  document.getElementById('order-drawer').classList.add('open');
+  // Use cached data immediately — no spinner, no extra fetch
+  const cached = allOrders.find(o=>o.pageId===pageId);
+  if(cached){ currentOrder=cached; renderDrawer(cached); }
+  // Refresh in background for latest notes/state
+  try{
+    const r = await API.order(pageId);
+    const fresh = await r.json();
+    if(fresh && fresh.pageId){ currentOrder=fresh; renderDrawer(fresh); }
+  } catch(e){ /* cached data already shown */ }
+}
+function closeDrawer(){
+  document.getElementById('dw-ov').classList.remove('open');
+  document.getElementById('order-drawer').classList.remove('open');
+  document.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('active-row'));
+}
+
+/* ─── AI Panel ────────────────────────────────────────────────────────────── */
+// Conversation history — sent with every request so Claude has context
+const aiHistory = [];
+
+function toggleAI(){
+  aiOpen = !aiOpen;
+  document.getElementById('ai-panel').classList.toggle('expanded', aiOpen);
+}
+function closeAI(){ aiOpen=false; document.getElementById('ai-panel').classList.remove('expanded'); }
+
+function useChip(el){
+  if(!aiOpen) toggleAI();
+  document.getElementById('ai-input').value = el.textContent.trim();
+  document.getElementById('ai-input').focus();
+}
+
+function autoResize(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ── Read-only mock responses (no DB writes) ──────────────────────────────────
+const READ_RESPONSES = {
+  'total revenue today': {
+    text: `<strong>Today's Revenue: $142.00</strong><br/><br/>Breakdown:<ul><li>8 orders · Cash $54 · Venmo $40 · Zelle $28 · Card $20</li><li>Still unpaid: $50 across 5 orders</li></ul>↑ 18% vs yesterday ($120).`,
+    actions: []
+  },
+  'rundown': {
+    text: `<strong>Today — May 16, 2026</strong><br/><br/><ul><li>14 open orders total</li><li>3 expedited (2 due today or overdue)</li><li>📞 2 callback requests pending</li><li>5 unpaid · $186 outstanding</li><li>3 orders at Ready for Pickup</li></ul>Biggest flag: Angela Torres coat overdue, still in Sorting.`,
+    actions: [{ kind:'read', summary:'Scanned all 14 open orders' }]
+  },
+  'overdue': {
+    text: `<strong>2 overdue orders:</strong><ul><li><span class="ai-num">#DCL-2838</span> Angela Torres — Coat (Expedited), due 2026-05-17, still Sorting</li><li><span class="ai-num">#DCL-2839</span> Robert Liu — Shirt, Ready for Pickup since 2026-05-15, not collected</li></ul>`,
+    actions: [{ kind:'read', summary:'Searched orders: status=OPEN, expectedDate ≤ today' }]
+  },
+  'owes payment': {
+    text: `<strong>5 unpaid orders · $186 total:</strong><ul><li><span class="ai-num">#DCL-2841</span> John Sullivan — Suit · $36</li><li><span class="ai-num">#DCL-2838</span> Angela Torres — Coat · $33</li><li><span class="ai-num">#DCL-2837</span> David Park — Jacket · $20</li><li><span class="ai-num">#DCL-2834</span> Priya Mehta — Dress · $18</li><li><span class="ai-num">#DCL-2833</span> Carlos Reyes — Pants · $10</li></ul>`,
+    actions: [{ kind:'read', summary:'Searched orders: paymentMethod=Unpaid' }]
+  },
+};
+
+// ── Write mock responses (simulate DB mutations) ─────────────────────────────
+const WRITE_RESPONSES = {
+  'pressing': {
+    text: `Found <span class="ai-num">#DCL-2841</span> — John Sullivan's Suit (Expedited, $36).<br/><br/>✅ Tracker stage updated to <strong>Pressing</strong>.`,
+    actions: [
+      { kind:'read',  summary:'search_orders: q="John Sullivan"' },
+      { kind:'write', summary:'#DCL-2841 → TRACKER_STAGE: Pressing' },
+    ]
+  },
+  'venmo today': {
+    text: `<span class="ai-num">#DCL-2841</span> John Sullivan's Suit marked as paid.<br/><br/>✅ Payment method: <strong>Venmo</strong> · Date: <strong>2026-05-16</strong>.`,
+    actions: [
+      { kind:'read',  summary:'search_orders: q="John Sullivan"' },
+      { kind:'write', summary:'#DCL-2841 → PAYMENT_METHOD: Venmo, PAYMENT_DATE: 2026-05-16' },
+    ]
+  },
+  'maria garcia': {
+    text: `✅ New order created.<br/><br/><strong>Maria Garcia</strong> — Dress, Regular, $18, due May 20.<br/>Order ID: <span class="ai-num">#DCL-2842</span> · Stage: Received · Payment: Unpaid.`,
+    actions: [
+      { kind:'create', summary:'#DCL-2842 created — Maria Garcia / Dress / Regular / $18' },
+    ]
+  },
+  'ready for pickup': {
+    text: `<span class="ai-num">#DCL-2838</span> Angela Torres — Coat moved forward.<br/><br/>✅ Stage: <strong>Ready for Pickup</strong>. Customer can be notified.`,
+    actions: [
+      { kind:'read',  summary:'search_orders: q="Angela Torres"' },
+      { kind:'write', summary:'#DCL-2838 → TRACKER_STAGE: Ready for Pickup' },
+    ]
+  },
+  'dcl-2836': {
+    text: `<span class="ai-num">#DCL-2836</span> Sandra Weston — Pants.<br/><br/>✅ Stage set to <strong>Delivered</strong> and order <strong>CLOSED</strong>. All done, good grief!`,
+    actions: [
+      { kind:'write', summary:'#DCL-2836 → TRACKER_STAGE: Delivered' },
+      { kind:'write', summary:'#DCL-2836 → OPEN: CLOSED' },
+    ]
+  },
+  'expedited': {
+    text: `<span class="ai-num">#DCL-2837</span> David Park — Jacket upgraded.<br/><br/>✅ Order type set to <strong>Expedited</strong>. New price suggestion: $30 (was $20).`,
+    actions: [
+      { kind:'read',  summary:'search_orders: q="David Park"' },
+      { kind:'write', summary:'#DCL-2837 → ORDER_TYPE: Expedited' },
+    ]
+  },
+};
+
+async function sendAI(){
+  const inp = document.getElementById('ai-input');
+  const q = inp.value.trim();
+  if(!q || aiThinking) return;
+
+  addMsg('user', q);
+  aiHistory.push({ role:'user', content: q });
+  inp.value = '';
+  inp.style.height = 'auto';
+
+  aiThinking = true;
+  document.getElementById('ai-send-btn').disabled = true;
+  const thinkId = addThinking();
+
+  // Live mode
+  try {
+    const token = localStorage.getItem('dashboard_token');
+    const res = await fetch('/api/dashboard/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ message: q, history: aiHistory.slice(-12) }),
+    });
+    const { reply, actions } = await res.json();
+    removeThinking(thinkId);
+    addMsg('bot', reply, actions);
+    aiHistory.push({ role:'assistant', content: reply });
+  } catch(e) {
+    removeThinking(thinkId);
+    addMsg('bot', 'Connection error — is the server running on :3001?');
+  } finally {
+    aiThinking = false;
+    document.getElementById('ai-send-btn').disabled = false;
+  }
+}
+
+function addMsg(role, html, actions){
+  const msgs = document.getElementById('ai-msgs');
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + role;
+  const avatar = document.createElement('div');
+  avatar.className = 'ai-avatar';
+  avatar.textContent = role === 'bot' ? '🐾' : '👤';
+  const bubble = document.createElement('div');
+  bubble.className = 'ai-bubble';
+  bubble.innerHTML = html;
+
+  // Render action card beneath bot bubbles when DB was touched
+  if(role === 'bot' && actions && actions.length > 0){
+    const card = document.createElement('div');
+    card.className = 'ai-action-card';
+    const hdr = document.createElement('div');
+    hdr.className = 'ai-action-card-hdr';
+    const hasWrite = actions.some(a => a.kind !== 'read');
+    hdr.innerHTML = (hasWrite ? '⚡ Notion updated' : '🔍 Database queried');
+    card.appendChild(hdr);
+    actions.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'ai-action-row';
+      row.innerHTML = `<span class="ai-action-kind ${a.kind}">${a.kind}</span>${a.summary}`;
+      card.appendChild(row);
+    });
+    bubble.appendChild(card);
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function addThinking(){
+  const msgs = document.getElementById('ai-msgs');
+  const id = 'think-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'ai-msg bot';
+  div.id = id;
+  div.innerHTML = `<div class="ai-avatar">🐾</div><div class="ai-bubble"><div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+function removeThinking(id){
+  const el = document.getElementById(id);
+  if(el) el.remove();
+}
+
+/* ─── Price Modal ─────────────────────────────────────────────────────────── */
+function openPriceModal(){ document.getElementById('price-modal').classList.add('open'); }
+function closePriceModal(){ document.getElementById('price-modal').classList.remove('open'); }
+
+/* ─── Toast ───────────────────────────────────────────────────────────────── */
+function showToast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' '+type : '');
+  void t.offsetWidth;
+  t.classList.add('show');
+  if(toastT) clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+/* ─── Keyboard ────────────────────────────────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape'){ closeDrawer(); closePriceModal(); closeNewOrderModal(); }
+  if((e.metaKey||e.ctrlKey) && e.key==='k'){ e.preventDefault(); toggleAI(); }
+});
+
+/* ─── State ─────────────────────────────────────────────────────────────────── */
+let currentOrder = null;
+let allOrders = [];
+let currentPage = 0;
+const PAGE_SIZE = 15;
+const STAGES = ['Received','Sorting','Cleaning','Pressing','Ready for Pickup','Delivered'];
+
+/* ─── Data loading ───────────────────────────────────────────────────────────── */
+async function loadStats(){
+  try{
+    const s = await (await API.stats()).json();
+    document.querySelector('[data-stat="open"]').textContent      = s.open;
+    document.querySelector('[data-stat="expedited"]').textContent = s.expedited;
+    document.querySelector('[data-stat="unpaid"]').textContent    = s.unpaid;
+    document.querySelector('[data-stat="callbacks"]').textContent = s.callbacks;
+  } catch(e){ console.error('loadStats:',e); }
+}
+
+async function loadOrders(params={}){
+  try{
+    const orders = await (await API.orders(params)).json();
+    renderOrders(orders);
+  } catch(e){ console.error('loadOrders:',e); }
+}
+
+function getFilters(){
+  const p={};
+  document.querySelectorAll('[data-api-param]').forEach(el=>{
+    if(el.value) p[el.dataset.apiParam]=el.value;
+  });
+  return p;
+}
+function applyFilters(){ showToast('Fetching…',''); loadOrders(getFilters()); }
+
+/* ─── Render orders ──────────────────────────────────────────────────────────── */
+function renderOrders(orders){
+  allOrders = orders;
+  currentPage = 0;
+  renderPage();
+}
+
+function renderPage(){
+  const tbody = document.getElementById('orders-tbody');
+  if(!allOrders.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">No orders found</td></tr>';
+    document.getElementById('pg-label').textContent='0 orders';
+    document.getElementById('pg-prev').disabled=true;
+    document.getElementById('pg-next').disabled=true;
+    return;
+  }
+  const total = allOrders.length;
+  const pages = Math.ceil(total/PAGE_SIZE);
+  const start = currentPage*PAGE_SIZE;
+  const slice = allOrders.slice(start, start+PAGE_SIZE);
+  tbody.innerHTML = slice.map(orderRowHtml).join('');
+  document.getElementById('pg-label').textContent=`${start+1}–${Math.min(start+PAGE_SIZE,total)} of ${total}`;
+  document.getElementById('tw-meta').textContent=`${total} orders`;
+  document.getElementById('pg-prev').disabled = currentPage===0;
+  document.getElementById('pg-next').disabled = currentPage>=pages-1;
+}
+
+function changePage(dir){
+  const pages = Math.ceil(allOrders.length/PAGE_SIZE);
+  currentPage = Math.max(0, Math.min(pages-1, currentPage+dir));
+  renderPage();
+}
+
+function orderRowHtml(o){
+  const si = STAGES.indexOf(o.tracker??'');
+  const dots = STAGES.map((_,i)=>`<div class="td2 ${i<si?'done':i===si?'act':'todo'}"></div>`).join('');
+  const stLbl = o.tracker==='Ready for Pickup'?'Ready':(o.tracker??'New');
+  const tCls  = o.orderType==='Expedited'?'b-exp':'b-reg';
+  const pCls  = (!o.paymentMethod||o.paymentMethod==='Unpaid')?'b-unpaid':'b-paid';
+  const isOpen = o.tracker!=='Delivered'&&o.tracker!=='Cancelled';
+  return `<tr onclick="openDrawerForOrder('${o.pageId}')" id="row-${o.pageId}">
+    <td class="td-mono">${o.orderId||'—'}</td>
+    <td><div class="td-name">${o.customerName}</div><div class="td-mono">${o.phone??'—'}</div></td>
+    <td><span class="badge b-g">${o.garmentType??'—'}</span></td>
+    <td><span class="badge ${tCls}">${o.orderType??'—'}</span></td>
+    <td><div class="tp">${dots}<span class="tp-lbl${si===STAGES.length-1?' done-lbl':''}">${stLbl}</span></div></td>
+    <td class="td-mono">${o.expectedDate??'—'}</td>
+    <td style="font-family:var(--fm)">${o.price!=null?'$'+o.price.toFixed(2):'—'}</td>
+    <td><span class="badge ${pCls}">${o.paymentMethod??'Unpaid'}</span></td>
+    <td><span class="badge ${isOpen?'b-open':'b-closed'}">${isOpen?'OPEN':'CLOSED'}</span></td>
+  </tr>`;
+}
+
+function updateRow(o){
+  const el = document.getElementById('row-'+o.pageId);
+  if(el) el.outerHTML = orderRowHtml(o);
+}
+
+/* ─── Drawer ─────────────────────────────────────────────────────────────────── */
+function renderDrawer(o){
+  document.getElementById('dw-order-id').textContent   = o.orderId||'—';
+  document.getElementById('dw-cust-name').textContent  = o.customerName;
+  document.getElementById('dw-cust-phone').value = o.phone??'';
+  document.getElementById('dw-det-garment').textContent = o.garmentType??'—';
+  document.getElementById('dw-det-type').innerHTML = `<span class="badge ${o.orderType==='Expedited'?'b-exp':'b-reg'}">${o.orderType??'—'}</span>`;
+  document.getElementById('dw-det-price').textContent    = o.price!=null?'$'+o.price.toFixed(2):'—';
+  document.getElementById('dw-det-expected').textContent = o.expectedDate??'—';
+  const isOpen = o.tracker!=='Delivered'&&o.tracker!=='Cancelled';
+  document.getElementById('dw-det-status').innerHTML  = `<span class="badge ${isOpen?'b-open':'b-closed'}">${isOpen?'OPEN':'CLOSED'}</span>`;
+  const pCls = (!o.paymentMethod||o.paymentMethod==='Unpaid')?'b-unpaid':'b-paid';
+  document.getElementById('dw-det-payment').innerHTML = `<span class="badge ${pCls}">${o.paymentMethod??'Unpaid'}</span>`;
+  // Tracker steps
+  const si = STAGES.indexOf(o.tracker??'');
+  document.getElementById('dw-tracker-steps').innerHTML = STAGES.map((s,i)=>{
+    const cls=i<si?'done':i===si?'act':'';
+    const dot=i<si?'✓':i===si?'●':i+1;
+    const lbl=s==='Ready for Pickup'?'Ready':s;
+    return `<div class="tstep ${cls}" onclick="quickStage(this,'${s.replace(/'/g,"\\'")}')"><div class="tstep-dot">${dot}</div><div class="tstep-lbl">${lbl}</div></div>`;
+  }).join('');
+  document.getElementById('dw-tracker-sel').value   = o.tracker??'Received';
+  document.getElementById('dw-payment-method').value = o.paymentMethod??'Unpaid';
+  document.getElementById('dw-payment-date').value  = o.paymentDate??'';
+  document.getElementById('dw-price-inp').value      = o.price??'';
+  document.getElementById('dw-date-inp').value       = o.expectedDate??'';
+  document.getElementById('dw-garment-sel').value    = o.garmentType??'';
+  document.getElementById('dw-notes-disp').textContent = o.notes||('no notes yet');
+  document.getElementById('dw-note-inp').value = '';
+}
+
+/* ─── Phone edit ─────────────────────────────────────────────────────────────── */
+async function saveOrderPhone(phone){
+  if(!currentOrder||!phone.trim()) return;
+  try{
+    const r = await fetch(`/api/dashboard/orders/${currentOrder.pageId}/phone`,{method:'PATCH',headers:jsonH(),body:JSON.stringify({phone:phone.trim()})});
+    currentOrder = await r.json();
+    showToast('Phone saved ✓','ok');
+  } catch(e){ showToast('Failed','err'); }
+}
+
+async function callOrderNow(){
+  if(!currentOrder) return;
+  const phone = document.getElementById('dw-cust-phone').value.trim();
+  if(!phone){ showToast('Enter a phone number first','err'); return; }
+  const btn = document.getElementById('dw-call-btn');
+  btn.textContent='Calling…'; btn.disabled=true;
+  try{
+    const r = await fetch(`/api/dashboard/orders/${currentOrder.pageId}/call`,{
+      method:'POST', headers:jsonH(),
+      body: JSON.stringify({phone, customerName: currentOrder.customerName, orderId: currentOrder.orderId}),
+    });
+    const d = await r.json();
+    if(!r.ok){ showToast('Twilio error: '+(d.error||'unknown'),'err'); return; }
+    showToast(`Calling ${phone} ✓ (SID …${d.callSid.slice(-6)})`,'ok');
+  } catch(e){ showToast('Call failed','err'); }
+  finally{ btn.textContent='📲 Call'; btn.disabled=false; }
+}
+
+/* ─── Tracker ────────────────────────────────────────────────────────────────── */
+async function quickStage(el, stage){
+  if(!currentOrder) return;
+  el.style.opacity='0.5';
+  try{
+    currentOrder = await (await API.tracker(currentOrder.pageId,stage)).json();
+    renderDrawer(currentOrder); updateRow(currentOrder); await loadStats();
+    showToast(`Stage → ${stage} ✓`,'ok');
+  } catch(err){ el.style.opacity='1'; showToast('Update failed: '+err,'err'); }
+}
+async function saveTracker(){
+  if(!currentOrder) return;
+  const stage = document.getElementById('dw-tracker-sel').value;
+  try{
+    currentOrder = await (await API.tracker(currentOrder.pageId,stage)).json();
+    renderDrawer(currentOrder); updateRow(currentOrder); await loadStats();
+    showToast('Stage updated ✓','ok');
+  } catch(e){ showToast('Update failed','err'); }
+}
+
+/* ─── Payment ────────────────────────────────────────────────────────────────── */
+async function savePayment(){
+  if(!currentOrder) return;
+  const method = document.getElementById('dw-payment-method').value;
+  const date   = document.getElementById('dw-payment-date').value||null;
+  try{
+    currentOrder = await (await API.payment(currentOrder.pageId,method,date)).json();
+    renderDrawer(currentOrder); updateRow(currentOrder); await loadStats();
+    showToast('Payment saved ✓','ok');
+  } catch(e){ showToast('Update failed','err'); }
+}
+
+/* ─── Price & Date ───────────────────────────────────────────────────────────── */
+async function savePriceDate(){
+  if(!currentOrder) return;
+  const price = parseFloat(document.getElementById('dw-price-inp').value);
+  const date  = document.getElementById('dw-date-inp').value;
+  const calls = [];
+  if(!isNaN(price)) calls.push(API.price(currentOrder.pageId,price).then(r=>r.json()));
+  if(date)          calls.push(API.date(currentOrder.pageId,date).then(r=>r.json()));
+  if(!calls.length) return;
+  try{
+    const res = await Promise.all(calls);
+    currentOrder = res[res.length-1];
+    renderDrawer(currentOrder); updateRow(currentOrder);
+    showToast('Updated ✓','ok');
+  } catch(e){ showToast('Update failed','err'); }
+}
+
+/* ─── Note ───────────────────────────────────────────────────────────────────── */
+async function saveNote(){
+  if(!currentOrder) return;
+  const inp = document.getElementById('dw-note-inp');
+  const note = inp.value.trim();
+  if(!note) return;
+  try{
+    currentOrder = await (await API.note(currentOrder.pageId,note)).json();
+    renderDrawer(currentOrder); inp.value='';
+    showToast('Note added ✓','ok');
+  } catch(e){ showToast('Update failed','err'); }
+}
+
+/* ─── Quick actions ──────────────────────────────────────────────────────────── */
+async function requestCallbackAction(){
+  if(!currentOrder) return;
+  const reason = prompt('Callback reason:');
+  if(!reason) return;
+  try{
+    currentOrder = await (await API.callback(currentOrder.pageId,reason)).json();
+    renderDrawer(currentOrder); await loadStats();
+    showToast('Callback logged ✓','ok');
+  } catch(e){ showToast('Failed','err'); }
+}
+async function makeExpeditedAction(){
+  if(!currentOrder) return;
+  try{
+    currentOrder = await (await API.type(currentOrder.pageId,'Expedited')).json();
+    renderDrawer(currentOrder); updateRow(currentOrder);
+    showToast('Set to Expedited ✓','ok');
+  } catch(e){ showToast('Failed','err'); }
+}
+async function editGarmentAction(){
+  if(!currentOrder) return;
+  const g = document.getElementById('dw-garment-sel').value;
+  if(!g){ showToast('Select a garment','err'); return; }
+  try{
+    currentOrder = await (await API.garment(currentOrder.pageId,g)).json();
+    renderDrawer(currentOrder); updateRow(currentOrder);
+    showToast('Garment updated ✓','ok');
+  } catch(e){ showToast('Failed','err'); }
+}
+
+/* ─── Callbacks tab ──────────────────────────────────────────────────────────── */
+async function loadCallbacks(){
+  try{
+    const cbs = await (await fetch('/api/dashboard/callbacks',{headers:authH()})).json();
+    const el  = document.getElementById('callbacks-container');
+    if(!cbs.length){
+      el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">No pending callbacks ✓</div>';
+    } else {
+      const pending  = cbs.filter(c=>c.status==='Pending');
+      const approved = cbs.filter(c=>c.status==='Approved');
+      let html = '';
+      if(pending.length){
+        html += `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">⏳ Awaiting Approval (${pending.length})</div>`;
+        html += pending.map(cb=>`
+          <div class="cb-card warn-cb" id="cb-${cb.callbackId}">
+            <div class="cb-icon">📞</div>
+            <div class="cb-body">
+              <div class="cb-name">${cb.customerName} — ${cb.orderId}</div>
+              <div class="cb-reason">"${cb.reason}"</div>
+              <div class="cb-meta" style="align-items:center;gap:6px">
+                <input id="phone-${cb.callbackId}" value="${cb.phone??''}" placeholder="+1..." style="font-family:var(--fm);font-size:.82rem;border:1.5px solid var(--border);border-radius:var(--rs);padding:4px 8px;background:var(--bg);outline:none;width:145px" onkeydown="if(event.key==='Enter')savePhone('${cb.callbackId}',this.value)"/>
+                <button class="btn btn-ghost btn-sm" onclick="savePhone('${cb.callbackId}',document.getElementById('phone-${cb.callbackId}').value)">Save</button>
+                <span class="td-mono" style="font-size:.72rem;color:var(--muted)">Req. ${cb.requestedAt??'?'}</span>
+              </div>
+            </div>
+            <div class="cb-actions" style="flex-direction:column;gap:6px">
+              <button class="btn btn-primary btn-sm" onclick="callNow('${cb.callbackId}','${cb.customerName}','${cb.orderId}','${(cb.reason||'').replace(/'/g,"\\'")}')">📲 Call Now</button>
+              <button class="btn btn-ghost btn-sm" onclick="approveCallback('${cb.callbackId}')">✓ Approve</button>
+              <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="resolveCallback('${cb.callbackId}',this)">✕ Dismiss</button>
+            </div>
+          </div>`).join('');
+      }
+      if(approved.length){
+        html += `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--green);margin:${pending.length?'18px':0} 0 10px">🟢 Approved — Auto-calling next cycle (${approved.length})</div>`;
+        html += approved.map(cb=>`
+          <div class="cb-card" style="border-left:4px solid var(--green)" id="cb-${cb.callbackId}">
+            <div class="cb-icon">📲</div>
+            <div class="cb-body">
+              <div class="cb-name">${cb.customerName} — ${cb.orderId}</div>
+              <div class="cb-reason">"${cb.reason}"</div>
+              <div class="cb-meta" style="align-items:center;gap:6px">
+                <input id="phone-${cb.callbackId}" value="${cb.phone??''}" placeholder="+1..." style="font-family:var(--fm);font-size:.82rem;border:1.5px solid var(--border);border-radius:var(--rs);padding:4px 8px;background:var(--bg);outline:none;width:145px" onkeydown="if(event.key==='Enter')savePhone('${cb.callbackId}',this.value)"/>
+                <button class="btn btn-ghost btn-sm" onclick="savePhone('${cb.callbackId}',document.getElementById('phone-${cb.callbackId}').value)">Save</button>
+                <span class="badge b-open" style="font-size:.65rem">~2 min</span>
+              </div>
+            </div>
+            <div class="cb-actions">
+              <button class="btn btn-primary btn-sm" onclick="callNow('${cb.callbackId}','${cb.customerName}','${cb.orderId}','${(cb.reason||'').replace(/'/g,"\\'")}')">📲 Call Now</button>
+            </div>
+          </div>`).join('');
+      }
+      el.innerHTML = html;
+    }
+    await loadCallLog();
+  } catch(e){ console.error('loadCallbacks:',e); }
+}
+
+async function savePhone(id, phone){
+  try{
+    await fetch(`/api/dashboard/callbacks/${id}/phone`,{method:'PATCH',headers:jsonH(),body:JSON.stringify({phone})});
+    showToast('Phone updated ✓','ok');
+  } catch(e){ showToast('Failed to save phone','err'); }
+}
+
+async function callNow(id, customerName, orderId, reason){
+  const phoneEl = document.getElementById('phone-'+id);
+  const phone = phoneEl ? phoneEl.value.trim() : '';
+  if(!phone){ showToast('Enter a phone number first','err'); return; }
+  try{
+    showToast('Calling…','');
+    const r = await fetch(`/api/dashboard/callbacks/${id}/call`,{
+      method:'POST', headers:jsonH(),
+      body: JSON.stringify({phone, customerName, orderId, reason}),
+    });
+    const d = await r.json();
+    if(!r.ok){ showToast('Call failed: '+(d.error||''),'err'); return; }
+    showToast(`Called ${phone} ✓ (SID: ${d.callSid?.slice(-8)})`, 'ok');
+    document.getElementById('cb-'+id)?.remove();
+    await loadStats(); await loadCallLog();
+  } catch(e){ showToast('Call failed: '+e,'err'); }
+}
+
+async function approveCallback(id){
+  try{
+    await fetch(`/api/dashboard/callbacks/${id}/approve`,{method:'POST',headers:jsonH()});
+    await loadCallbacks(); await loadStats();
+    showToast('Approved — auto-call in ≤2 min ✓','ok');
+  } catch(e){ showToast('Failed','err'); }
+}
+
+async function resolveCallback(id,btn){
+  try{
+    await fetch(`/api/dashboard/callbacks/${id}/resolve`,{method:'POST',headers:jsonH()});
+    btn.closest('.cb-card').remove();
+    await loadStats();
+    showToast('Dismissed ✓','ok');
+  } catch(e){ showToast('Failed','err'); }
+}
+
+async function loadCallLog(){
+  try{
+    const calls = await (await fetch('/api/dashboard/calls',{headers:authH()})).json();
+    const el = document.getElementById('call-log');
+    if(!el) return;
+    // Filter out empty/bad entries (no customer name or result)
+    const valid = calls.filter(c => c.customer && c.customer !== '—' && c.result && c.result !== '—');
+    if(!valid.length){ el.innerHTML=''; return; }
+    el.innerHTML = valid.slice(0,10).map(c=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.85rem;font-weight:600">${c.customer}</div>
+          <div style="font-size:.75rem;color:var(--muted);font-family:var(--fm)">${c.phone??'—'} · ${c.calledAt??'?'}</div>
+          ${c.reason?`<div style="font-size:.75rem;color:var(--muted);font-style:italic">${c.reason}</div>`:''}
+        </div>
+        <span class="badge ${c.result==='Called'?'b-open':'b-unpaid'}" style="font-size:.65rem">${c.result}</span>
+      </div>`).join('');
+  } catch(e){ console.error('loadCallLog:',e); }
+}
+
+/* ─── Prices modal ───────────────────────────────────────────────────────────── */
+async function loadPrices(){
+  try{
+    const prices = await (await API.prices()).json();
+    const tbody  = document.getElementById('price-tbody');
+    if(!tbody||!prices.length) return;
+    tbody.innerHTML = prices.map(p=>
+      `<tr><td style="font-weight:600">${p.item}</td><td class="p-reg">${p.regularPrice!=null?'$'+p.regularPrice.toFixed(2):'—'}</td><td class="p-exp">${p.expeditedPrice!=null?'$'+p.expeditedPrice.toFixed(2):'—'}</td></tr>`
+    ).join('');
+  } catch(e){ console.error('loadPrices:',e); }
+}
+
+/* ─── New Order Modal ────────────────────────────────────────────────────────── */
+function openNewOrderModal(){
+  document.getElementById('new-order-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('nlp-input').focus(),50);
+}
+function closeNewOrderModal(){
+  document.getElementById('new-order-modal').classList.remove('open');
+  document.getElementById('nlp-input').value='';
+  document.getElementById('nlp-preview').style.display='none';
+}
+
+function parseNLP(text){
+  const t = text.trim();
+  const out = {};
+  let rest = t;
+
+  // Phone — any digit cluster that looks like a number (10-11 digits, with or without +1, dashes, spaces)
+  const phoneM = rest.match(/(\+?1?[\s.\-]?\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4})/);
+  if(phoneM){
+    out.phone = phoneM[0].replace(/[^\d+]/g,'');
+    if(out.phone.length===10) out.phone='+1'+out.phone;
+    else if(out.phone.length===11&&out.phone[0]==='1') out.phone='+'+out.phone;
+    rest = rest.replace(phoneM[0],'');
+  }
+
+  // Price — $XX, XX dollars, or bare number after known price words
+  const priceM = rest.match(/\$\s*(\d+(?:\.\d{1,2})?)|(\d+(?:\.\d{1,2})?)\s*(?:dollars?|bucks?)/i);
+  if(priceM){ out.price=parseFloat(priceM[1]||priceM[2]); rest=rest.replace(priceM[0],''); }
+  else {
+    // bare standalone number that could be a price (5–999)
+    const bareM = rest.match(/\b(\d{1,3}(?:\.\d{1,2})?)\b/);
+    if(bareM&&parseFloat(bareM[1])>=5){ out.price=parseFloat(bareM[1]); rest=rest.replace(bareM[0],''); }
+  }
+
+  // Order type
+  if(/exp(edit(ed)?)?/i.test(rest)) out.orderType='Expedited';
+  else if(/reg(ular)?/i.test(rest)) out.orderType='Regular';
+
+  // Garment — longest match wins
+  const garments=[
+    ['wedding dress','Wedding Dress'],['dress shirt','Shirt'],['button.?up','Shirt'],
+    ['suit','Suit'],['dress','Dress'],['jacket','Jacket'],['coat','Coat'],
+    ['trousers','Pants'],['pants','Pants'],['skirt','Skirt'],
+    ['shirt','Shirt'],['blouse','Shirt'],['jeans','Pants'],['blazer','Jacket']
+  ];
+  for(const [kw,val] of garments){
+    if(new RegExp('\\b'+kw+'\\b','i').test(rest)){ out.garmentType=val; rest=rest.replace(new RegExp('\\b'+kw+'\\b','i'),''); break; }
+  }
+
+  // Date — ISO, "May 20", "the 20th", "next Friday", "tomorrow", "in X days"
+  const isoM = rest.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+  if(isoM){ out.expectedDate=isoM[1]; rest=rest.replace(isoM[0],''); }
+  else {
+    const now=new Date();
+    if(/tomorrow/i.test(rest)){ const d=new Date(now); d.setDate(d.getDate()+1); out.expectedDate=d.toISOString().split('T')[0]; rest=rest.replace(/tomorrow/i,''); }
+    else if(/next\s+(mon|tue|wed|thu|fri|sat|sun)\w*/i.test(rest)){
+      const days=['sun','mon','tue','wed','thu','fri','sat'];
+      const m=rest.match(/next\s+(mon|tue|wed|thu|fri|sat|sun)\w*/i);
+      const target=days.findIndex(d=>m[1].toLowerCase().startsWith(d));
+      const diff=((target-now.getDay()+7)%7)||7;
+      const d=new Date(now); d.setDate(d.getDate()+diff);
+      out.expectedDate=d.toISOString().split('T')[0]; rest=rest.replace(m[0],'');
+    } else {
+      const mo='jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|june|july|august|september|october|november|december';
+      const dm=rest.match(new RegExp('(?:by|due|before|on)?\\s*('+mo+')[\\s./,]+(\\d{1,2})(?:st|nd|rd|th)?','i'));
+      if(dm){
+        const mo2=new Date(dm[1]+' 1 2000').getMonth()+1;
+        out.expectedDate=`${now.getFullYear()}-${String(mo2).padStart(2,'0')}-${String(parseInt(dm[2])).padStart(2,'0')}`;
+        rest=rest.replace(dm[0],'');
+      }
+    }
+  }
+
+  // Notes — capture anything after "note:", "notes:", "special:", etc.
+  const noteM = rest.match(/(?:note|notes|special|comment|instructions?)[:\s]+(.+)/i);
+  if(noteM){ out.notes=noteM[1].trim(); rest=rest.replace(noteM[0],''); }
+
+  // Customer name — what's left after stripping keywords; first 1-3 word proper-name-ish chunk
+  let nameStr = rest
+    .replace(/\b(expedited|regular|exp|reg|due|by|before|on|the|and|for|with|a|an)\b/gi,'')
+    .replace(/[,;:]/g,' ').replace(/\s{2,}/g,' ').trim();
+  const capM = nameStr.match(/([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+){0,2})/);
+  if(capM) out.customerName=capM[1].trim();
+  else out.customerName=nameStr.split(/\s+/).slice(0,2).join(' ').trim()||null;
+
+  return out;
+}
+
+document.getElementById('nlp-input').addEventListener('input', function(){
+  if(!this.value.trim()){ document.getElementById('nlp-preview').style.display='none'; return; }
+  const p = parseNLP(this.value);
+  const parts=[];
+  if(p.customerName) parts.push(`<strong>${p.customerName}</strong>`);
+  if(p.phone) parts.push(p.phone);
+  if(p.garmentType) parts.push(p.garmentType);
+  if(p.orderType) parts.push(`<span style="color:var(--orange)">${p.orderType}</span>`);
+  if(p.price!=null) parts.push(`$${p.price.toFixed(2)}`);
+  if(p.expectedDate) parts.push(`due ${p.expectedDate}`);
+  const prev = document.getElementById('nlp-preview');
+  prev.innerHTML = '🔍 Parsed: ' + (parts.length ? parts.join(' · ') : '<em>keep typing…</em>');
+  prev.style.display='block';
+});
+
+async function parseAndCreate(){
+  const text = document.getElementById('nlp-input').value.trim();
+  if(!text){ showToast('Enter order details','err'); return; }
+  const parsed = parseNLP(text);
+  if(!parsed.customerName || parsed.customerName==='Unknown'){
+    showToast('Could not detect customer name','err'); return;
+  }
+  try{
+    showToast('Creating…','');
+    const r = await fetch('/api/dashboard/orders',{
+      method:'POST', headers:jsonH(),
+      body: JSON.stringify(parsed),
+    });
+    if(!r.ok) throw new Error(await r.text());
+    const order = await r.json();
+    closeNewOrderModal();
+    await loadOrders(getFilters());
+    await loadStats();
+    showToast(`Order created: ${order.orderId} ✓`,'ok');
+  } catch(e){ showToast('Create failed: '+e,'err'); }
+}
+
+</script>
+</body>
+</html>

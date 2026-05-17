@@ -1,0 +1,306 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "getOrderByPhone",
+      "description": "Look up all orders associated with a phone number. Returns order details including ID, customer name, price, expected pickup date, notes, order type, tracker stage, payment status, and garment type. Primary lookup when a customer calls in. Returns up to 5 most recent orders.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "Customer phone number exactly as stored, e.g. +14155551234"
+          }
+        },
+        "required": ["phone"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "getOrderById",
+      "description": "Look up a specific order by its ORDER_ID value. Use this when the customer provides their order number verbally during the call.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "description": "The ORDER_ID value provided by the customer"
+          }
+        },
+        "required": ["orderId"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "lookupPrice",
+      "description": "Look up the price for a specific garment type from the pricing schedule. Use when a customer asks how much something costs, or to auto-fill the price when updating an order.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "garmentType": {
+            "type": "string",
+            "description": "The garment type to look up, e.g. Shirt, Pants, Dress, Suit"
+          },
+          "orderType": {
+            "type": "string",
+            "enum": ["Regular", "Expedited"],
+            "description": "Whether to get the regular or expedited price"
+          }
+        },
+        "required": ["garmentType", "orderType"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "listAllPrices",
+      "description": "Return the full pricing schedule — all garment types with their regular and expedited prices. Use when a customer asks for a general price list.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "searchOrdersByName",
+      "description": "Search for orders by customer name. Use as fallback when getOrderByPhone finds nothing — e.g. customer calling from a different number. Always confirm identity before reading or updating any data.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Customer name or partial name to search for" }
+        },
+        "required": ["name"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "cancelOrder",
+      "description": "Mark an order as Cancelled. Use when a customer calls to cancel before pickup. Always confirm with the customer before calling this.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": { "type": "string", "description": "Notion page ID from getOrderByPhone or getOrderById" }
+        },
+        "required": ["pageId"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "triggerPickupCall",
+      "description": "Initiate an outbound call to notify a customer their order is ready for pickup. Only call if NOTIFIED_AT is not already set on the order.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": { "type": "string", "description": "Notion page ID from getOrderByPhone or getOrderById" },
+          "phone": { "type": "string", "description": "Customer phone in E.164 format e.g. +14155551234" },
+          "customerName": { "type": "string", "description": "Customer name to pass to the voice agent" },
+          "orderId": { "type": "string", "description": "ORDER_ID value for reference" }
+        },
+        "required": ["pageId", "phone", "customerName", "orderId"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "appendOrderNote",
+      "description": "Append a note to an existing order. Use to record customer preferences, special handling instructions, or any NLP-captured information from the call. Previous notes are preserved.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "Notion page ID returned by getOrderByPhone or getOrderById (the pageId field)"
+          },
+          "note": {
+            "type": "string",
+            "description": "Text to append to the order notes. Be specific and concise."
+          }
+        },
+        "required": ["pageId", "note"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "setOrderType",
+      "description": "Change an order's type — e.g. upgrade Regular to Expedited. Consider calling lookupPrice afterward to update the price accordingly.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "Notion page ID returned by getOrderByPhone or getOrderById (the pageId field)"
+          },
+          "orderType": {
+            "type": "string",
+            "enum": ["Regular", "Expedited"],
+            "description": "The new order type to set"
+          }
+        },
+        "required": ["pageId", "orderType"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "updateTracker",
+      "description": "Update how far along an order is in the cleaning process.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "Notion page ID returned by getOrderByPhone or getOrderById (the pageId field)"
+          },
+          "stage": {
+            "type": "string",
+            "enum": ["Received", "Sorting", "Cleaning", "Pressing", "Ready for Pickup", "Delivered"],
+            "description": "The current stage of the order"
+          }
+        },
+        "required": ["pageId", "stage"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "updatePayment",
+      "description": "Record or update how and when an order was paid. Set paymentDate to today's date when marking as paid. Set paymentDate to null if not yet paid.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "Notion page ID returned by getOrderByPhone or getOrderById (the pageId field)"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": ["Cash", "Card", "Venmo", "Zelle", "Unpaid"],
+            "description": "How the customer paid"
+          },
+          "paymentDate": {
+            "type": ["string", "null"],
+            "description": "Date payment was received in YYYY-MM-DD format. Null if not yet paid."
+          }
+        },
+        "required": ["pageId", "paymentMethod", "paymentDate"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "updateGarmentType",
+      "description": "Set or correct the garment type on an order. After updating, consider calling lookupPrice to sync the price from the pricing schedule.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "Notion page ID returned by getOrderByPhone or getOrderById (the pageId field)"
+          },
+          "garmentType": {
+            "type": "string",
+            "enum": ["Shirt", "Pants", "Dress", "Suit", "Jacket", "Coat", "Skirt", "Other"],
+            "description": "The type of garment"
+          }
+        },
+        "required": ["pageId", "garmentType"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "requestCallback",
+      "description": "Log a callback request on an order so staff know to follow up with the customer. Use when: the customer wants to confirm expedited capacity, the item needs a custom quote, or only staff can answer the question.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "Notion page ID returned by getOrderByPhone or getOrderById (the pageId field)"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why the customer wants a callback, e.g. 'Confirming expedited capacity for suit pickup Friday'"
+          }
+        },
+        "required": ["pageId", "reason"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "updateOrderPrice",
+      "description": "Update the price on an order. Use after lookupPrice returns a price, or when a staff member authorizes a manual price change.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "Notion page ID returned by getOrderByPhone or getOrderById (the pageId field)"
+          },
+          "price": {
+            "type": "number",
+            "description": "New total price in dollars (e.g. 24.99)"
+          }
+        },
+        "required": ["pageId", "price"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "updateOrderExpectedDate",
+      "description": "Update the expected delivery/pickup date on an order. Use when a customer is told a new date during the call.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "Notion page ID returned by getOrderByPhone or getOrderById (the pageId field)"
+          },
+          "expectedDate": {
+            "type": "string",
+            "description": "New expected date in YYYY-MM-DD format (e.g. 2025-05-20)"
+          }
+        },
+        "required": ["pageId", "expectedDate"],
+        "additionalProperties": false
+      }
+    }
+  }
+]
