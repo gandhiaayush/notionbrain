@@ -93,7 +93,7 @@ export async function openGeminiSession(
 
   // Trigger opening greeting
   const openingCue = outboundContext
-    ? `[Outbound call connected. Deliver your opening line now — confirm you're speaking with ${outboundContext.customerName}, then tell them order ${outboundContext.orderId} is ready for pickup. Then call getOrderById with orderId="${outboundContext.orderId}" to load the order details.]`
+    ? `[Outbound call connected. Say exactly: "Hey, this is Charlie's Cleaners — is this ${outboundContext.customerName}? Your order ${outboundContext.orderId} is ready for pickup!" Then call getOrderById with orderId="${outboundContext.orderId}" to load the order details and answer any questions.]`
     : `[Call connected. Say exactly: "Hey, this is Charlie's Cleaners." — nothing else. Then wait for the customer to speak.]`;
   liveSession.sendRealtimeInput({ text: openingCue });
 
