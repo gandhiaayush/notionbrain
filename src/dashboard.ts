@@ -125,7 +125,15 @@ app.post("/api/dashboard/auth", (req, res) => {
 
 // ─── Protected routes ─────────────────────────────────────────────────────────
 
-const r = express.Router(); // no auth — local staff tool on localhost
+function requireAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+	const token = req.headers.authorization?.replace("Bearer ", "");
+	if (!process.env.DASHBOARD_TOKEN || token !== process.env.DASHBOARD_TOKEN) {
+		res.status(401).json({ error: "Unauthorized" }); return;
+	}
+	next();
+}
+const r = express.Router();
+r.use(requireAuth);
 
 // GET /orders  — list + filter in-code
 r.get("/orders", async (req, res) => {
