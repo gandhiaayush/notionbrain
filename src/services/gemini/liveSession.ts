@@ -40,6 +40,7 @@ export async function openGeminiSession(
     config: {
       responseModalities: [Modality.AUDIO],
       systemInstruction: { parts: [{ text: systemPrompt }] },
+      temperature: 0,
       speechConfig: {
         voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } },
         languageCode: "en-US",
