@@ -52,23 +52,32 @@ function phoneVariants(phone: string): string[] {
 
 async function getOrderByPhone({ phone }: { phone: string }) {
   const variants = phoneVariants(phone);
-  const results = await Promise.all(
+  // Track which variant matched each result for verification signals
+  const rawByVariant = await Promise.all(
     variants.map((v) =>
       (notion as any).dataSources.query({
         data_source_id: ds("ORDERS_DATA_SOURCE_ID"),
         filter: { property: "ORDER_PHONE", phone_number: { equals: v } },
         page_size: 5,
-      }).then((r: any) => r.results).catch(() => [])
+      }).then((r: any) => r.results.map((p: any) => ({ page: p, matchedVariant: v }))).catch(() => [])
     )
   );
-  // First non-empty result wins, dedupe by pageId
   const seen = new Set<string>();
-  const orders = results.flat().filter((p: any) => {
-    if (seen.has(p.id)) return false;
-    seen.add(p.id);
-    return true;
-  }).map(shapeOrder);
-  return { found: orders.length > 0, orders };
+  const enriched: Array<ReturnType<typeof shapeOrder> & { matchedPhone: string }> = [];
+  for (const batch of rawByVariant) {
+    for (const { page, matchedVariant } of batch) {
+      if (seen.has(page.id)) continue;
+      seen.add(page.id);
+      enriched.push({ ...shapeOrder(page), matchedPhone: matchedVariant });
+    }
+  }
+  const hint =
+    enriched.length > 1
+      ? `Multiple orders found — ask customer which garment (${enriched.map((o) => o.garmentType || o.orderId).join(", ")}) before reading order details`
+      : enriched.length === 0
+      ? `No order matched phone ${phone} — try searchOrdersByName as fallback`
+      : null;
+  return { found: enriched.length > 0, orders: enriched, _verify: hint };
 }
 
 async function getOrderById({ orderId }: { orderId: string }) {
@@ -78,7 +87,12 @@ async function getOrderById({ orderId }: { orderId: string }) {
     page_size: 1,
   });
   const results = res.results.map(shapeOrder);
-  return { found: results.length > 0, order: results[0] ?? null };
+  const order = results[0] ?? null;
+  // Verification hint: caller ID lookup has no phone check — confirm identity before any write
+  const hint = order
+    ? `Verify caller identity — confirm customer name matches "${order.customerName}" before making any changes`
+    : null;
+  return { found: results.length > 0, order, _verify: hint };
 }
 
 async function searchOrdersByName({ name }: { name: string }) {
