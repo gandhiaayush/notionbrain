@@ -5,10 +5,9 @@ import { config } from "../config";
 export const outboundRouter = Router();
 
 outboundRouter.post("/", async (req: Request, res: Response): Promise<void> => {
-  const { phone, customerName, orderId } = req.body as {
-    phone: string;
-    customerName: string;
-    orderId: string;
+  const { phone, customerName, orderId, callType, reason, pageId } = req.body as {
+    phone: string; customerName: string; orderId: string;
+    callType?: string; reason?: string; pageId?: string;
   };
 
   if (!phone || !customerName || !orderId) {
@@ -18,7 +17,10 @@ outboundRouter.post("/", async (req: Request, res: Response): Promise<void> => {
 
   try {
     const client = twilio(config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN);
-    const voiceUrl = `${config.TWILIO_WEBHOOK_BASE}/voice?outbound=true&customerName=${encodeURIComponent(customerName)}&orderId=${encodeURIComponent(orderId)}`;
+    const params = new URLSearchParams({ outbound: "true", customerName, orderId, callType: callType ?? "pickup" });
+    if (reason) params.set("reason", reason);
+    if (pageId) params.set("pageId", pageId);
+    const voiceUrl = `${config.TWILIO_WEBHOOK_BASE}/voice?${params.toString()}`;
 
     await client.calls.create({
       to: phone,
