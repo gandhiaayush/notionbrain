@@ -394,25 +394,32 @@ worker.tool("requestCallback", {
 				"Why the customer wants a callback, e.g. 'Confirming expedited capacity for Suit (2-piece) pickup Friday'",
 			),
 	}),
-	execute: async ({ customerName, phone, orderId, reason }, { notion }) => {
+	execute: async ({ pageId, customerName, phone, orderId, reason }, { notion }) => {
 		const today = new Date().toISOString().split("T")[0];
+		const cbProps: Record<string, unknown> = {
+			CUSTOMER_NAME: { title: [{ type: "text", text: { content: customerName } }] },
+			ORDER_ID:      { rich_text: [{ type: "text", text: { content: orderId } }] },
+			REASON:        { rich_text: [{ type: "text", text: { content: reason } }] },
+			REQUESTED_AT:  { date: { start: today } },
+			STATUS:        { rich_text: [{ type: "text", text: { content: "Pending" } }] },
+		};
+		if (phone) cbProps["PHONE"] = { phone_number: phone };
 		await notion.pages.create({
 			parent: { database_id: callbacksDbId() },
-			properties: {
-				CUSTOMER_NAME: {
-					title: [{ type: "text", text: { content: customerName } }],
-				},
-				ORDER_ID: {
-					rich_text: [{ type: "text", text: { content: orderId } }],
-				},
-				PHONE: { phone_number: phone },
-				REASON: {
-					rich_text: [{ type: "text", text: { content: reason } }],
-				},
-				REQUESTED_AT: { date: { start: today } },
-				STATUS: { rich_text: [{ type: "text", text: { content: "Pending" } }] },
-			} as any,
+			properties: cbProps as any,
 		});
+		// Stamp the order so staff see the inquiry when opening it
+		if (pageId) {
+			const orderPage = await notion.pages.retrieve({ page_id: pageId }) as any;
+			const existing = (orderPage.properties["NOTES"]?.rich_text ?? []).map((t: any) => t.plain_text as string).join("");
+			const note = `📞 Callback requested ${today}: ${reason}`;
+			await notion.pages.update({
+				page_id: pageId,
+				properties: {
+					NOTES: { rich_text: [{ type: "text", text: { content: existing ? `${existing}\n${note}` : note } }] },
+				},
+			});
+		}
 		return { success: true, callbackLogged: true, reason };
 	},
 });
@@ -568,12 +575,12 @@ worker.tool("triggerPickupCall", {
 		customerName: j.string().describe("Customer name to pass to the voice agent"),
 		orderId: j.string().describe("ORDER_ID value for reference"),
 	}),
-	execute: async ({ phone, customerName, orderId }) => {
+	execute: async ({ pageId, phone, customerName, orderId }) => {
 		const { accountSid, authToken, fromNumber, webhookBase } = twilioEnv();
 
 		const credentials = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 		const base = webhookBase.replace(/\/$/, "");
-		const callUrl = `${base}/voice?${new URLSearchParams({ outbound: "true", callType: "pickup", customerName, orderId, reason: "Your order is ready for pickup" }).toString()}`;
+		const callUrl = `${base}/voice?${new URLSearchParams({ outbound: "true", callType: "pickup", customerName, orderId, pageId: pageId ?? "", reason: "Your order is ready for pickup" }).toString()}`;
 
 		const res = await fetch(
 			`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,
