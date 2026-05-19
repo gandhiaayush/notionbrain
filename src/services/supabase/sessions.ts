@@ -22,6 +22,7 @@ export interface Session {
   status: "active" | "completed" | "error";
   is_outbound: boolean;
   outbound_context: OutboundContext | null;
+  created_at: string;
 }
 
 export async function getCallerRole(phone: string): Promise<{ role: "owner" | "consumer"; name: string | null }> {

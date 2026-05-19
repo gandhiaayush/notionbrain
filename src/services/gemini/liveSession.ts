@@ -26,7 +26,8 @@ export async function openGeminiSession(
   onError: (err: Error) => void,
   outboundContext?: OutboundContext | null,
   onClose?: () => void,
-  onHangup?: () => void
+  onHangup?: () => void,
+  isResume?: boolean
 ): Promise<GeminiHandle> {
   const tools = callerRole === "owner" ? OWNER_TOOLS : CONSUMER_TOOLS;
   const systemPrompt = outboundContext
@@ -95,9 +96,11 @@ export async function openGeminiSession(
     },
   });
 
-  // Trigger opening greeting
+  // Trigger opening cue — skip greeting on reconnect
   const openingCue = outboundContext
     ? `[Outbound call connected. Say exactly: "Hey, this is Charlie's Cleaners — is this ${outboundContext.customerName}? Your order ${outboundContext.orderId} is ready for pickup!" Then call getOrderById with orderId="${outboundContext.orderId}" to load the order details and answer any questions.]`
+    : isResume
+    ? `[Call reconnected after a brief disconnect. Do NOT re-introduce yourself. Do NOT say "Hey, this is Charlie's Cleaners." Simply say "Sorry about that — we got disconnected. Where were we?" and continue the conversation.]`
     : `[Call connected. Say exactly: "Hey, this is Charlie's Cleaners — how can I help you today?" — nothing else. Then wait for the customer to speak.]`;
   liveSession.sendRealtimeInput({ text: openingCue });
 
