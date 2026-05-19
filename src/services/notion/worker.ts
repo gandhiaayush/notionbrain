@@ -288,7 +288,7 @@ async function cancelOrder({ pageId }: { pageId: string }) {
 // ─── WRITE: Create callback ────────────────────────────────────────────────────
 
 async function requestCallback({
-  customerName, phone, orderId, reason,
+  pageId, customerName, phone, orderId, reason,
 }: { pageId: string; customerName: string; phone: string; orderId: string; reason: string }) {
   const today = new Date().toISOString().split("T")[0];
   const cbProps: Record<string, unknown> = {
@@ -303,6 +303,10 @@ async function requestCallback({
     parent: { database_id: ds("CALLBACKS_DATABASE_ID") } as any,
     properties: cbProps as any,
   });
+  // Also stamp the order so staff can see the inquiry when opening the order
+  if (pageId) {
+    await appendOrderNote({ pageId, note: `📞 Callback requested ${today}: ${reason}` });
+  }
   return { success: true, callbackLogged: true, reason };
 }
 
