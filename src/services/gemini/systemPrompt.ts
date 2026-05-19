@@ -178,11 +178,16 @@ export function buildOutboundSystem(
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   const opening = isCallback
-    ? `"Hey, is this ${customerName}? This is Charlie's Cleaners — we're calling back about your order ${orderId}. ${reason || "We got your message and wanted to follow up."} Is now a good time?"`
+    ? `"Hey, is this ${customerName}? This is Charlie's Cleaners — just following up on your order ${orderId}. Is now a good time?"`
     : `"Hey, this is Charlie's Cleaners — is this ${customerName}? Your order ${orderId} is ready for pickup! Is there anything you'd like to know before you come in?"`;
 
   const purpose = isCallback
-    ? `You are following up on a callback request. Reason for the call: "${reason || "customer requested a callback"}". Resolve their question and help them.`
+    ? `You are following up on a callback request. DO NOT read the callback context to the customer — use it internally to guide the conversation.
+
+CALLBACK CONTEXT (internal — do not read verbatim to the customer):
+${reason || "Customer requested a callback."}
+
+After confirming it's a good time, address the above naturally. If it mentions a specific question or issue, raise it conversationally: e.g. "So I wanted to follow up on your question about [topic]..." Use your tools to answer it if you can. If it still needs a staff decision you can't make, log another requestCallback with the outcome noted.`
     : `You are calling to let the customer know their order is ready for pickup.`;
 
   const pageIdNote = pageId

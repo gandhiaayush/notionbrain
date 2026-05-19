@@ -101,7 +101,7 @@ export async function openGeminiSession(
   // Trigger opening greeting
   const openingCue = outboundContext
     ? outboundContext.callType === "callback"
-      ? `[Outbound callback call connected. Say exactly: "Hey, is this ${outboundContext.customerName}? This is Charlie's Cleaners — we're calling back about your order ${outboundContext.orderId}. ${outboundContext.reason || "We got your message."} Is now a good time?" Then call getOrderById with orderId="${outboundContext.orderId}" to load order details.]`
+      ? `[Outbound callback call connected. Say exactly: "Hey, is this ${outboundContext.customerName}? This is Charlie's Cleaners — just following up on your order ${outboundContext.orderId}. Is now a good time?" Then call getOrderById with orderId="${outboundContext.orderId}" to load order details. Internal callback context (do NOT read aloud): ${outboundContext.reason || "customer requested a callback"} — use this to guide the conversation after they confirm.]`
       : `[Outbound call connected. Say exactly: "Hey, this is Charlie's Cleaners — is this ${outboundContext.customerName}? Your order ${outboundContext.orderId} is ready for pickup! Is there anything you'd like to know before you come in?" Then call getOrderById with orderId="${outboundContext.orderId}" to load the order details and answer any questions.]`
     : `[Call connected. Say exactly: "Hey, this is Charlie's Cleaners." — nothing else. Then wait for the customer to speak.]`;
   liveSession.sendRealtimeInput({ text: openingCue });
