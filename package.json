@@ -16,7 +16,7 @@
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.96.0",
-		"@google/genai": "^2.3.0",
+		"@google/genai": "^2.5.0",
 		"@notionhq/client": "^5.21.0",
 		"@notionhq/workers": ">=0.0.0",
 		"@supabase/supabase-js": "^2.47.2",
@@ -35,8 +35,8 @@
 		"@types/node": "^22.10.5",
 		"@types/ws": "^8.18.1",
 		"nodemon": "^3.1.7",
-		"tsx": "^4.20.6",
 		"ts-node": "^10.9.2",
+		"tsx": "^4.20.6",
 		"typescript": "^5.7.3"
 	}
 }
