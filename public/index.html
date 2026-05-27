@@ -389,7 +389,17 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
 .donut-legend{flex:1}
 .legend-item{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:.8rem}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+/* ─── Calendar Tab ─────────────────────────────────────────────────────────── */
+#cal-wrap { padding: 20px 24px; height: calc(100vh - 54px - var(--tab-h) - 40px); }
+#cal-wrap .fc { font-family: var(--fb); font-size: .82rem; }
+#cal-wrap .fc-toolbar-title { font-family: var(--fh); font-size: 1.1rem; font-weight: 800; }
+#cal-wrap .fc-event { cursor: pointer; border-radius: 2px; font-size: .72rem; }
+#cal-wrap .fc-event-exp { background: #0D0D0D; border-color: #0D0D0D; color: #fff; }
+#cal-wrap .fc-event-reg { background: #555; border-color: #555; color: #fff; }
+#cal-wrap .fc-event-done { background: #aaa; border-color: #aaa; color: #fff; }
 </style>
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
 </head>
 <body>
 
@@ -425,7 +435,10 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
     <div class="tab" data-tab="callbacks" onclick="switchTab('callbacks')">
       📞 Callbacks <span class="tab-badge" id="tb-cb">0</span>
     </div>
-    
+    <div class="tab" data-tab="calendar" onclick="switchTab('calendar')">
+      📅 Calendar
+    </div>
+
   </nav>
 
   <!-- Content -->
@@ -528,6 +541,13 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
       <!-- Urgent orders -->
       <div style="margin-top:28px" id="urgent-orders-container"></div>
     </div><!-- /callbacks -->
+
+    <!-- ── CALENDAR TAB ──────────────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-calendar">
+      <div id="cal-wrap">
+        <div id="cal"></div>
+      </div>
+    </div>
 
     </div><!-- /content-area -->
 </div><!-- /dashboard -->
@@ -786,6 +806,7 @@ function switchTab(name){
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id==='tab-'+name));
   if(name==='callbacks'){ loadCallbacks(); loadUrgentOrders(); }
   if(name==='orders')    loadOrders(getFilters());
+  if(name==='calendar'){ initCalendar(); loadCalendarOrders(); }
 }
 
 /* ─── Drawer ──────────────────────────────────────────────────────────────── */
@@ -1478,6 +1499,48 @@ async function loadPrices(){
       `<tr><td style="font-weight:600">${p.item}</td><td class="p-reg">${p.regularPrice!=null?'$'+p.regularPrice.toFixed(2):'—'}</td><td class="p-exp">${p.expeditedPrice!=null?'$'+p.expeditedPrice.toFixed(2):'—'}</td></tr>`
     ).join('');
   } catch(e){ console.error('loadPrices:',e); }
+}
+
+/* ─── Calendar Tab ─────────────────────────────────────────────────────────── */
+let calInstance = null;
+
+function initCalendar() {
+  if (calInstance) { calInstance.render(); return; }
+  const el = document.getElementById('cal');
+  if (!el) return;
+  calInstance = new FullCalendar.Calendar(el, {
+    initialView: 'dayGridMonth',
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+    height: '100%',
+    events: [],
+    eventClick: function(info) {
+      const pageId = info.event.extendedProps.pageId;
+      if (pageId) openDrawerForOrder(pageId);
+    },
+  });
+  calInstance.render();
+}
+
+async function loadCalendarOrders() {
+  if (!calInstance) return;
+  try {
+    const orders = await (await API.orders({ status: 'OPEN' })).json();
+    const events = orders
+      .filter(o => o.expectedDate)
+      .map(o => {
+        const isClosed = o.tracker === 'Delivered' || o.tracker === 'Cancelled';
+        const isExp = o.orderType === 'Expedited';
+        const cls = isClosed ? 'fc-event-done' : isExp ? 'fc-event-exp' : 'fc-event-reg';
+        return {
+          title: `${o.customerName} · ${o.garmentType || 'Order'} (${o.orderId})`,
+          start: o.expectedDate,
+          classNames: [cls],
+          extendedProps: { pageId: o.pageId, tracker: o.tracker },
+        };
+      });
+    calInstance.removeAllEvents();
+    calInstance.addEventSource(events);
+  } catch (e) { console.error('loadCalendarOrders:', e); }
 }
 
 /* ─── New Order Modal ────────────────────────────────────────────────────────── */
