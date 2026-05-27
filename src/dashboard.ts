@@ -509,6 +509,42 @@ r.post("/ai", (_req, res) => {
 	});
 });
 
+// GET /twiml/callback  — returns TwiML for outbound callback calls
+r.get("/twiml/callback", (req, res) => {
+  const customerName = String(req.query.customerName ?? "valued customer");
+  const orderId      = String(req.query.orderId ?? "");
+  const garmentType  = String(req.query.garmentType ?? "");
+  const reason       = String(req.query.reason ?? "");
+  const notes        = String(req.query.notes ?? "");
+
+  let reasonScript = "";
+  if (reason === "order_ready") {
+    reasonScript = "Your order is ready for pickup.";
+  } else if (reason === "payment_issue") {
+    reasonScript = "We have a question about the payment on your order.";
+  } else if (reason === "pickup_reminder") {
+    reasonScript = "This is a reminder about your scheduled pickup tomorrow.";
+  } else if (reason) {
+    reasonScript = notes || reason;
+  } else {
+    reasonScript = "We wanted to follow up on your recent order.";
+  }
+
+  const garmentPart = garmentType ? ` for your ${garmentType}` : "";
+  const orderPart   = orderId ? ` order ${orderId}` : " order";
+
+  const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna">
+    Hi ${customerName}, this is Charlie's Cleaners calling about your${orderPart}${garmentPart}.
+    ${reasonScript}
+    Please call us back or stop by before seven. Thank you.
+  </Say>
+</Response>`;
+
+  res.type("text/xml").send(twiml);
+});
+
 app.use("/api/dashboard", r);
 
 // Local dev: start server. On Vercel the default export is used instead.

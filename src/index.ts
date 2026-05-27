@@ -630,6 +630,30 @@ worker.sync("callbackPoller", {
 
 			if (!phone) continue;
 
+			// Skip and log if reason is missing — never dial without context
+			if (!reason || !reason.trim()) {
+				const failNote = `Failed - missing reason ${today}`;
+				await notion.pages.update({
+					page_id: page.id,
+					properties: {
+						NOTES: { rich_text: [{ type: "text", text: { content: failNote } }] },
+					},
+				});
+				changes.push({
+					type: "upsert" as const,
+					key: page.id,
+					properties: {
+						Customer:      Builder.title(customerName),
+						"Callback ID": Builder.richText(page.id),
+						Phone:         Builder.richText(phone ?? ""),
+						Reason:        Builder.richText("(none)"),
+						"Called At":   Builder.date(today),
+						Result:        Builder.select("Failed"),
+					},
+				});
+				continue;
+			}
+
 			// Count prior failures from notes to cap retries at 3
 			const failCount = getText(p["NOTES"] ?? {}).split("❌").length - 1;
 			if (failCount >= 3) {
@@ -671,13 +695,15 @@ worker.sync("callbackPoller", {
 
 			let result = "Called";
 			try {
-				const callParams = new URLSearchParams({
-					outbound: "true", callType: "callback",
-					customerName, orderId, reason: reason || "",
-					...(orderPageId ? { pageId: orderPageId } : {}),
-					...orderCtx,
+				const twimlParams = new URLSearchParams({
+					customerName,
+					orderId,
+					reason,
+					garmentType:   orderCtx.garmentType   ?? "",
+					trackerStage:  orderCtx.trackerStage  ?? "",
+					notes:         (orderCtx.notes ?? "").slice(0, 200),
 				});
-				const callUrl = `${base}/voice?${callParams.toString()}`;
+				const callUrl = `${base}/api/dashboard/twiml/callback?${twimlParams.toString()}`;
 				const creds = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 				const r = await fetch(
 					`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`,

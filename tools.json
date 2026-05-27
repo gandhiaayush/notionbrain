@@ -251,7 +251,7 @@
           },
           "reason": {
             "type": "string",
-            "description": "Why the customer wants a callback, e.g. 'Confirming expedited capacity for suit pickup Friday'"
+            "description": "Why the callback is needed. Use a slug when applicable: 'order_ready', 'payment_issue', 'pickup_reminder'. Otherwise write a plain description. Required — never log a callback without a reason."
           }
         },
         "required": ["pageId", "reason"],
