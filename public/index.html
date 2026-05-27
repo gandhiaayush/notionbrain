@@ -1298,9 +1298,14 @@ async function editGarmentAction(){
 
 /* ─── Callbacks tab ──────────────────────────────────────────────────────────── */
 async function loadCallbacks(){
+  const el = document.getElementById('callbacks-container');
   try{
-    const cbs = await (await fetch('/api/dashboard/callbacks',{headers:authH()})).json();
-    const el  = document.getElementById('callbacks-container');
+    const res = await fetch('/api/dashboard/callbacks',{headers:authH()});
+    const cbs = await res.json();
+    if(!res.ok || !Array.isArray(cbs)){
+      el.innerHTML = `<div class="table-wrap"><div class="tw-hdr"><div class="tw-title">Callbacks</div><button class="btn btn-primary btn-sm" onclick="openNewCallbackModal()">+ New Callback</button></div><div style="text-align:center;padding:30px;color:var(--muted);font-size:.85rem">Error loading callbacks${cbs?.error ? ': ' + cbs.error : ' — check NOTION_API_TOKEN'}</div></div>`;
+      return;
+    }
     document.getElementById('tb-cb').textContent = String(cbs.length);
 
     const rows = cbs.length ? cbs.map(cb => {
