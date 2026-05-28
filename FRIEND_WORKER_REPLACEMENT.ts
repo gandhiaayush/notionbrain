@@ -32,9 +32,9 @@ function shapeOrder(page: any) {
     price:         (p["ORDER_PRICE"]?.number ?? null) as number | null,
     expectedDate:  (p["EXPECTED_DATE"]?.date?.start ?? null) as string | null,
     notes:         getText(p["NOTES"]),
-    orderType:     (p["ORDER_TYPE"]?.select?.name ?? null) as string | null,
-    tracker:       (p["TRACKER"]?.select?.name ?? null) as string | null,
-    paymentMethod: (p["PAYMENT_METHOD"]?.select?.name ?? null) as string | null,
+    orderType:     getText(p["ORDER_TYPE"]) || null,
+    tracker:       getText(p["TRACKER_STAGE"]) || null,
+    paymentMethod: getText(p["PAYMENT_METHOD"]) || null,
     paymentDate:   (p["PAYMENT_DATE"]?.date?.start ?? null) as string | null,
     garmentType:   getText(p["GARMENT_TYPE"]) || null,
   };
@@ -110,7 +110,7 @@ async function listAllPrices() {
 async function listPendingCallbacks() {
   const res = await notion.databases.query({
     database_id: CALLBACKS_DB(),
-    filter: { property: "STATUS", select: { equals: "Pending" } },
+    filter: { property: "STATUS", rich_text: { equals: "Pending" } },
     page_size: 50,
   });
   const callbacks = res.results.map((page: any) => {
@@ -122,7 +122,7 @@ async function listPendingCallbacks() {
       orderId:      getText(p["ORDER_ID"]),
       reason:       getText(p["REASON"]),
       requestedAt:  (p["REQUESTED_AT"]?.date?.start ?? null) as string | null,
-      status:       (p["STATUS"]?.select?.name ?? null) as string | null,
+      status:       getText(p["STATUS"]) || null,
     };
   });
   return { count: callbacks.length, callbacks };
@@ -144,7 +144,7 @@ async function appendOrderNote({ pageId, note }: { pageId: string; note: string 
 async function setOrderType({ pageId, orderType }: { pageId: string; orderType: string }) {
   await notion.pages.update({
     page_id: pageId,
-    properties: { ORDER_TYPE: { select: { name: orderType } } } as any,
+    properties: { ORDER_TYPE: { rich_text: [{ type: "text", text: { content: orderType } }] } } as any,
   });
   return { success: true, orderType };
 }
@@ -152,20 +152,19 @@ async function setOrderType({ pageId, orderType }: { pageId: string; orderType: 
 async function updateTracker({ pageId, stage }: { pageId: string; stage: string }) {
   await notion.pages.update({
     page_id: pageId,
-    properties: { TRACKER: { select: { name: stage } } } as any,
+    properties: { TRACKER_STAGE: { rich_text: [{ type: "text", text: { content: stage } }] } } as any,
   });
   return { success: true, stage };
 }
 
-async function updatePayment({ pageId, paymentMethod, paymentDate }: { pageId: string; paymentMethod: string; paymentDate: string | null }) {
+async function updatePayment({ pageId, paymentMethod }: { pageId: string; paymentMethod: string }) {
   await notion.pages.update({
     page_id: pageId,
     properties: {
-      PAYMENT_METHOD: { select: { name: paymentMethod } },
-      PAYMENT_DATE: { date: paymentDate ? { start: paymentDate } : null },
+      PAYMENT_METHOD: { rich_text: [{ type: "text", text: { content: paymentMethod } }] },
     } as any,
   });
-  return { success: true, paymentMethod, paymentDate };
+  return { success: true, paymentMethod };
 }
 
 async function updateGarmentType({ pageId, garmentType }: { pageId: string; garmentType: string }) {
@@ -206,7 +205,7 @@ async function requestCallback({ pageId, reason }: { pageId: string; reason: str
     ORDER_ID:      { rich_text: [{ type: "text", text: { content: orderId } }] },
     REASON:        { rich_text: [{ type: "text", text: { content: reason } }] },
     REQUESTED_AT:  { date: { start: today } },
-    STATUS:        { select: { name: "Pending" } },
+    STATUS:        { rich_text: [{ type: "text", text: { content: "Pending" } }] },
   };
   if (phone) cbProps["PHONE"] = { phone_number: phone };
   await notion.pages.create({
@@ -219,7 +218,7 @@ async function requestCallback({ pageId, reason }: { pageId: string; reason: str
 async function resolveCallback({ callbackId, status }: { callbackId: string; status: string }) {
   await notion.pages.update({
     page_id: callbackId,
-    properties: { STATUS: { select: { name: status } } } as any,
+    properties: { STATUS: { rich_text: [{ type: "text", text: { content: status } }] } } as any,
   });
   return { success: true, status };
 }
@@ -227,7 +226,7 @@ async function resolveCallback({ callbackId, status }: { callbackId: string; sta
 async function cancelOrder({ pageId }: { pageId: string }) {
   await notion.pages.update({
     page_id: pageId,
-    properties: { TRACKER: { select: { name: "Cancelled" } } } as any,
+    properties: { TRACKER_STAGE: { rich_text: [{ type: "text", text: { content: "Cancelled" } }] } } as any,
   });
   return { success: true };
 }

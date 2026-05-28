@@ -500,10 +500,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="form-row">
         <div class="fg">
           <select class="fsel" id="dw-garment-sel">
-            <option value="">— Select —</option>
-            <option>Shirt</option><option>Pants</option><option>Dress</option>
-            <option>Suit</option><option>Jacket</option><option>Coat</option>
-            <option>Skirt</option><option>Other</option>
+            <option value="">Loading…</option>
           </select>
         </div>
         <button class="btn btn-ghost" style="margin-top:auto" onclick="editGarmentAction()">Update</button>
@@ -894,7 +891,7 @@ function removeThinking(id){
 }
 
 /* ─── Price Modal ─────────────────────────────────────────────────────────── */
-function openPriceModal(){ document.getElementById('price-modal').classList.add('open'); }
+function openPriceModal(){ document.getElementById('price-modal').classList.add('open'); loadPrices(); }
 function closePriceModal(){ document.getElementById('price-modal').classList.remove('open'); }
 
 /* ─── Toast ───────────────────────────────────────────────────────────────── */
@@ -1444,11 +1441,17 @@ async function submitNewPickup(){
 async function loadPrices(){
   try{
     const prices = await (await API.prices()).json();
-    const tbody  = document.getElementById('price-tbody');
-    if(!tbody||!prices.length) return;
-    tbody.innerHTML = prices.map(p=>
-      `<tr><td style="font-weight:600">${p.item}</td><td class="p-reg">${p.regularPrice!=null?'$'+p.regularPrice.toFixed(2):'—'}</td><td class="p-exp">${p.expeditedPrice!=null?'$'+p.expeditedPrice.toFixed(2):'—'}</td></tr>`
-    ).join('');
+    const tbody = document.getElementById('price-tbody');
+    if(tbody && prices.length){
+      tbody.innerHTML = prices.map(p=>
+        `<tr><td style="font-weight:600">${p.item}</td><td class="p-reg">${p.regularPrice!=null?'$'+p.regularPrice.toFixed(2):'—'}</td><td class="p-exp">${p.expeditedPrice!=null?'$'+p.expeditedPrice.toFixed(2):'—'}</td></tr>`
+      ).join('');
+    }
+    const garmentSel = document.getElementById('dw-garment-sel');
+    if(garmentSel && prices.length){
+      garmentSel.innerHTML = '<option value="">— Select —</option>' +
+        prices.map(p=>`<option value="${p.item}">${p.item}</option>`).join('');
+    }
   } catch(e){ console.error('loadPrices:',e); }
 }
 
@@ -1583,26 +1586,41 @@ function parseNLP(text){
   return out;
 }
 
+let nlpDebounceTimer = null;
 document.getElementById('nlp-input').addEventListener('input', function(){
-  if(!this.value.trim()){ document.getElementById('nlp-preview').style.display='none'; return; }
-  const p = parseNLP(this.value);
-  const parts=[];
-  if(p.customerName) parts.push(`<strong>${p.customerName}</strong>`);
-  if(p.phone) parts.push(p.phone);
-  if(p.garmentType) parts.push(p.garmentType);
-  if(p.orderType) parts.push(`<span style="color:var(--orange)">${p.orderType}</span>`);
-  if(p.price!=null) parts.push(`$${p.price.toFixed(2)}`);
-  if(p.expectedDate) parts.push(`due ${p.expectedDate}`);
+  const val = this.value.trim();
   const prev = document.getElementById('nlp-preview');
-  prev.innerHTML = 'Parsed: ' + (parts.length ? parts.join(' · ') : '<em>keep typing…</em>');
-  prev.style.display='block';
+  if(!val){ prev.style.display='none'; return; }
+  prev.innerHTML = '<em style="color:var(--muted)">Parsing…</em>'; prev.style.display='block';
+  clearTimeout(nlpDebounceTimer);
+  nlpDebounceTimer = setTimeout(async () => {
+    let p;
+    try {
+      const r = await fetch('/api/dashboard/parse-order', {method:'POST', headers:jsonH(), body:JSON.stringify({text:val})});
+      p = r.ok ? await r.json() : parseNLP(val);
+    } catch(_){ p = parseNLP(val); }
+    const parts=[];
+    if(p.customerName) parts.push(`<strong>${p.customerName}</strong>`);
+    if(p.phone) parts.push(p.phone);
+    if(p.garmentType) parts.push(p.garmentType);
+    if(p.orderType) parts.push(`<span style="color:var(--orange)">${p.orderType}</span>`);
+    if(p.price!=null) parts.push(`$${Number(p.price).toFixed(2)}`);
+    if(p.expectedDate) parts.push(`due ${p.expectedDate}`);
+    prev.innerHTML = 'Parsed: ' + (parts.length ? parts.join(' · ') : '<em>keep typing…</em>');
+    prev.style.display='block';
+  }, 600);
 });
 
 async function parseAndCreate(){
   const text = document.getElementById('nlp-input').value.trim();
   if(!text){ showToast('Enter order details','err'); return; }
-  const parsed = parseNLP(text);
-  if(!parsed.customerName || parsed.customerName==='Unknown'){
+  showToast('Parsing…','');
+  let parsed;
+  try {
+    const pr = await fetch('/api/dashboard/parse-order', {method:'POST', headers:jsonH(), body:JSON.stringify({text})});
+    parsed = pr.ok ? await pr.json() : parseNLP(text);
+  } catch(_){ parsed = parseNLP(text); }
+  if(!parsed.customerName){
     showToast('Could not detect customer name','err'); return;
   }
   try{
