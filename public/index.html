@@ -4,9 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Charlie's Cleaners — Owner Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
 /* ─── Tokens ──────────────────────────────────────────────────────────── */
 :root{
@@ -419,7 +416,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
   <!-- Header -->
   <header class="hdr">
     <div class="hdr-brand">
-      🐾 Charlie's Cleaners
+      Charlie's Cleaners
       <span style="font-size:.68rem;color:#4A4A58;font-weight:400;font-family:var(--fm);margin-left:2px">v2</span>
     </div>
     <div class="hdr-right">
@@ -437,17 +434,17 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
   <!-- Tab Bar -->
   <nav class="tab-bar">
     <div class="tab active" data-tab="orders" onclick="switchTab('orders')">
-      📋 Orders
+      Orders
     </div>
     
     <div class="tab" data-tab="callbacks" onclick="switchTab('callbacks')">
-      📞 Callbacks <span class="tab-badge" id="tb-cb">0</span>
+      Callbacks <span class="tab-badge" id="tb-cb">0</span>
     </div>
     <div class="tab" data-tab="calendar" onclick="switchTab('calendar')">
-      📅 Calendar
+      Calendar
     </div>
     <div class="tab" data-tab="pickups" onclick="switchTab('pickups')">
-      🚗 Scheduled Pickups
+      Scheduled Pickups
     </div>
 
   </nav>
@@ -460,19 +457,15 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
       <!-- Stats -->
       <div class="stats-bar">
         <div class="sc">
-          <div class="sc-icon">🐾</div>
           <div><div class="sc-val" data-stat="open">—</div><div class="sc-lbl">Open Orders</div></div>
         </div>
         <div class="sc warn">
-          <div class="sc-icon">🚀</div>
           <div><div class="sc-val" data-stat="expedited">—</div><div class="sc-lbl">Expedited</div></div>
         </div>
         <div class="sc urgent">
-          <div class="sc-icon">💳</div>
           <div><div class="sc-val" data-stat="unpaid">—</div><div class="sc-lbl">Unpaid</div></div>
         </div>
         <div class="sc info">
-          <div class="sc-icon">📞</div>
           <div><div class="sc-val" data-stat="callbacks">—</div><div class="sc-lbl">Callbacks</div></div>
         </div>
       </div>
@@ -480,7 +473,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
       <!-- Filters -->
       <div class="filters-bar">
         <div class="filters-row">
-          <input class="fi fi-grow" type="text" placeholder="🔍  Search name, phone, order ID…" data-api-param="q"/>
+          <input class="fi fi-grow" type="text" placeholder="Search name, phone, order ID…" data-api-param="q"/>
           <select class="fi fi-sm" data-api-param="status">
             <option value="">All Statuses</option>
             <option>OPEN</option><option>CLOSED</option>
@@ -517,7 +510,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
           <div class="tw-title">Orders</div>
           <div style="display:flex;gap:9px;align-items:center">
             <span class="tw-meta" id="tw-meta">Loading…</span>
-            <button class="btn btn-ghost btn-sm" onclick="openPriceModal()">💰 Price List</button>
+            <button class="btn btn-ghost btn-sm" onclick="openPriceModal()">Price List</button>
             <button class="btn btn-primary btn-sm" onclick="openNewOrderModal()">+ New Order</button>
           </div>
         </div>
@@ -545,7 +538,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
 
       <!-- Call Log -->
       <div style="margin-top:28px">
-        <div class="tw-title" style="margin-bottom:12px">📋 Recent Call Log</div>
+        <div class="tw-title" style="margin-bottom:12px">Recent Call Log</div>
         <div class="table-wrap" style="padding:14px 18px"><div id="call-log"></div></div>
       </div>
 
@@ -565,7 +558,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
       <div style="padding:20px 24px">
         <div class="tw-hdr" style="margin-bottom:16px">
           <div>
-            <div class="tw-title">🚗 Scheduled Pickups</div>
+            <div class="tw-title">Scheduled Pickups</div>
             <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Reminder calls fire automatically — no manual trigger needed</div>
           </div>
           <button class="btn btn-primary btn-sm" onclick="openNewPickupModal()">+ Schedule Pickup</button>
@@ -668,7 +661,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
             <option>Skirt</option><option>Other</option>
           </select>
         </div>
-        <button class="btn btn-ghost" style="margin-top:auto" onclick="editGarmentAction()">✏️ Update</button>
+        <button class="btn btn-ghost" style="margin-top:auto" onclick="editGarmentAction()">Update</button>
       </div>
     </div>
 
@@ -684,8 +677,8 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
     <div class="dw-sec">
       <div class="dw-sec-t">Actions</div>
       <div class="form-row">
-        <button class="btn btn-ghost" onclick="makeExpeditedAction()">🚀 Make Expedited</button>
-        <button class="btn btn-danger" id="cb-toggle-btn" onclick="toggleCallbackForm()">📞 Log Callback</button>
+        <button class="btn btn-ghost" onclick="makeExpeditedAction()">Make Expedited</button>
+        <button class="btn btn-danger" id="cb-toggle-btn" onclick="toggleCallbackForm()">Log Callback</button>
       </div>
       <div id="cb-form" style="display:none;margin-top:10px">
         <div class="form-row">
@@ -710,7 +703,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
 <div class="mover" id="price-modal" onclick="closePriceModal()">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-hdr">
-      <div class="modal-title">💰 Price Schedule</div>
+      <div class="modal-title">Price Schedule</div>
       <button class="modal-close" onclick="closePriceModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -739,7 +732,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
 <div class="mover" id="new-order-modal" onclick="closeNewOrderModal()">
   <div class="modal" onclick="event.stopPropagation()" style="max-width:520px;width:95%">
     <div class="modal-hdr">
-      <div class="modal-title">➕ New Order</div>
+      <div class="modal-title">New Order</div>
       <button class="modal-close" onclick="closeNewOrderModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -762,7 +755,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
 <div class="mover" id="new-cb-modal" onclick="closeNewCallbackModal()">
   <div class="modal" onclick="event.stopPropagation()" style="max-width:480px;width:95%">
     <div class="modal-hdr">
-      <div class="modal-title">📞 New Callback</div>
+      <div class="modal-title">New Callback</div>
       <button class="modal-close" onclick="closeNewCallbackModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -784,7 +777,7 @@ tbody td{padding:11px 13px;font-size:.85rem;vertical-align:middle}
 <div class="mover" id="new-pickup-modal" onclick="closeNewPickupModal()">
   <div class="modal" onclick="event.stopPropagation()" style="max-width:480px;width:95%">
     <div class="modal-hdr">
-      <div class="modal-title">🚗 Schedule Pickup</div>
+      <div class="modal-title">Schedule Pickup</div>
       <button class="modal-close" onclick="closeNewPickupModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -854,7 +847,7 @@ function switchTab(name){
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id==='tab-'+name));
   if(name==='callbacks'){ loadCallbacks(); loadUrgentOrders(); }
   if(name==='orders')    loadOrders(getFilters());
-  if(name==='calendar'){ initCalendar(); loadCalendarOrders(); }
+  if(name==='calendar'){ setTimeout(()=>{ initCalendar(); loadCalendarOrders(); }, 0); }
   if(name==='pickups')   loadPickups();
 }
 
@@ -1549,30 +1542,42 @@ function closeNewPickupModal(){
   ['np-name','np-phone','np-address','np-datetime','np-orders'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
 }
 async function loadPickups(){
-  const el=document.getElementById('pickups-list');
+  const el = document.getElementById('pickups-list');
   if(!el) return;
-  try{
-    const res=await fetch('/api/dashboard/pickups',{headers:authH()});
-    const pickups=await res.json();
-    if(!res.ok||!Array.isArray(pickups)){
-      el.innerHTML=`<div style="text-align:center;padding:30px;color:var(--muted)">Error loading pickups${pickups?.error?': '+pickups.error:''}</div>`;
+  try {
+    const res = await fetch('/api/dashboard/pickups', {headers: authH()});
+    if(!res.ok){
+      const txt = await res.text();
+      console.error('loadPickups error:', res.status, txt);
+      el.innerHTML = `<div style="padding:20px;color:#000">Failed to load pickups (${res.status})</div>`;
       return;
     }
-    if(!pickups.length){ el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)">No scheduled pickups</div>`; return; }
-    el.innerHTML=pickups.map(p=>`
+    const pickups = await res.json();
+    if(!Array.isArray(pickups)){
+      el.innerHTML = `<div style="padding:20px;color:#000">Unexpected response</div>`;
+      return;
+    }
+    if(!pickups.length){
+      el.innerHTML = `<div style="padding:20px;color:#6B6B6B">No scheduled pickups</div>`;
+      return;
+    }
+    el.innerHTML = pickups.map(p => `
       <div class="pickup-card">
         <div class="pickup-card-hdr">
           <div>
             <div class="pickup-name">${p.customerName}</div>
-            <div class="pickup-meta">${p.scheduledDatetime??'No date set'} · ${p.address||'No address'}</div>
-            ${p.orderIds?`<div class="pickup-meta">Orders: ${p.orderIds}</div>`:''}
+            <div class="pickup-meta">${p.scheduledDatetime ?? 'No date'} · ${p.address || 'No address'}</div>
+            ${p.orderIds ? `<div class="pickup-meta">Orders: ${p.orderIds}</div>` : ''}
           </div>
-          <span class="pickup-badge${p.reminderSent?' sent':''}">
-            ${p.reminderSent?'Reminder Sent':'Pending Reminder'}
+          <span class="pickup-badge${p.reminderSent ? ' sent' : ''}">
+            ${p.reminderSent ? 'Reminder Sent' : 'Pending'}
           </span>
         </div>
       </div>`).join('');
-  } catch(e){ console.error('loadPickups:',e); }
+  } catch(e) {
+    console.error('loadPickups error:', e);
+    el.innerHTML = `<div style="padding:20px;color:#000">Error loading pickups</div>`;
+  }
 }
 async function submitNewPickup(){
   const name=document.getElementById('np-name').value.trim();
@@ -1621,6 +1626,7 @@ function initCalendar() {
     },
   });
   calInstance.render();
+  setTimeout(() => { if(calInstance) calInstance.updateSize(); }, 50);
 }
 
 async function loadCalendarOrders() {
