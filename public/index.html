@@ -903,7 +903,7 @@ const READ_RESPONSES = {
     actions: []
   },
   'rundown': {
-    text: `<strong>Today — May 16, 2026</strong><br/><br/><ul><li>14 open orders total</li><li>3 expedited (2 due today or overdue)</li><li>📞 2 callback requests pending</li><li>5 unpaid · $186 outstanding</li><li>3 orders at Ready for Pickup</li></ul>Biggest flag: Angela Torres coat overdue, still in Sorting.`,
+    text: `<strong>Today — May 16, 2026</strong><br/><br/><ul><li>14 open orders total</li><li>3 expedited (2 due today or overdue)</li><li>2 callback requests pending</li><li>5 unpaid · $186 outstanding</li><li>3 orders at Ready for Pickup</li></ul>Biggest flag: Angela Torres coat overdue, still in Sorting.`,
     actions: [{ kind:'read', summary:'Scanned all 14 open orders' }]
   },
   'overdue': {
@@ -919,41 +919,41 @@ const READ_RESPONSES = {
 // ── Write mock responses (simulate DB mutations) ─────────────────────────────
 const WRITE_RESPONSES = {
   'pressing': {
-    text: `Found <span class="ai-num">#DCL-2841</span> — John Sullivan's Suit (Expedited, $36).<br/><br/>✅ Tracker stage updated to <strong>Pressing</strong>.`,
+    text: `Found <span class="ai-num">#DCL-2841</span> — John Sullivan's Suit (Expedited, $36).<br/><br/>Tracker stage updated to <strong>Pressing</strong>.`,
     actions: [
       { kind:'read',  summary:'search_orders: q="John Sullivan"' },
       { kind:'write', summary:'#DCL-2841 → TRACKER_STAGE: Pressing' },
     ]
   },
   'venmo today': {
-    text: `<span class="ai-num">#DCL-2841</span> John Sullivan's Suit marked as paid.<br/><br/>✅ Payment method: <strong>Venmo</strong> · Date: <strong>2026-05-16</strong>.`,
+    text: `<span class="ai-num">#DCL-2841</span> John Sullivan's Suit marked as paid.<br/><br/>Payment method: <strong>Venmo</strong> · Date: <strong>2026-05-16</strong>.`,
     actions: [
       { kind:'read',  summary:'search_orders: q="John Sullivan"' },
       { kind:'write', summary:'#DCL-2841 → PAYMENT_METHOD: Venmo, PAYMENT_DATE: 2026-05-16' },
     ]
   },
   'maria garcia': {
-    text: `✅ New order created.<br/><br/><strong>Maria Garcia</strong> — Dress, Regular, $18, due May 20.<br/>Order ID: <span class="ai-num">#DCL-2842</span> · Stage: Received · Payment: Unpaid.`,
+    text: `New order created.<br/><br/><strong>Maria Garcia</strong> — Dress, Regular, $18, due May 20.<br/>Order ID: <span class="ai-num">#DCL-2842</span> · Stage: Received · Payment: Unpaid.`,
     actions: [
       { kind:'create', summary:'#DCL-2842 created — Maria Garcia / Dress / Regular / $18' },
     ]
   },
   'ready for pickup': {
-    text: `<span class="ai-num">#DCL-2838</span> Angela Torres — Coat moved forward.<br/><br/>✅ Stage: <strong>Ready for Pickup</strong>. Customer can be notified.`,
+    text: `<span class="ai-num">#DCL-2838</span> Angela Torres — Coat moved forward.<br/><br/>Stage: <strong>Ready for Pickup</strong>. Customer can be notified.`,
     actions: [
       { kind:'read',  summary:'search_orders: q="Angela Torres"' },
       { kind:'write', summary:'#DCL-2838 → TRACKER_STAGE: Ready for Pickup' },
     ]
   },
   'dcl-2836': {
-    text: `<span class="ai-num">#DCL-2836</span> Sandra Weston — Pants.<br/><br/>✅ Stage set to <strong>Delivered</strong> and order <strong>CLOSED</strong>. All done, good grief!`,
+    text: `<span class="ai-num">#DCL-2836</span> Sandra Weston — Pants.<br/><br/>Stage set to <strong>Delivered</strong> and order <strong>CLOSED</strong>. All done, good grief!`,
     actions: [
       { kind:'write', summary:'#DCL-2836 → TRACKER_STAGE: Delivered' },
       { kind:'write', summary:'#DCL-2836 → OPEN: CLOSED' },
     ]
   },
   'expedited': {
-    text: `<span class="ai-num">#DCL-2837</span> David Park — Jacket upgraded.<br/><br/>✅ Order type set to <strong>Expedited</strong>. New price suggestion: $30 (was $20).`,
+    text: `<span class="ai-num">#DCL-2837</span> David Park — Jacket upgraded.<br/><br/>Order type set to <strong>Expedited</strong>. New price suggestion: $30 (was $20).`,
     actions: [
       { kind:'read',  summary:'search_orders: q="David Park"' },
       { kind:'write', summary:'#DCL-2837 → ORDER_TYPE: Expedited' },
@@ -1002,7 +1002,7 @@ function addMsg(role, html, actions){
   div.className = 'ai-msg ' + role;
   const avatar = document.createElement('div');
   avatar.className = 'ai-avatar';
-  avatar.textContent = role === 'bot' ? '🐾' : '👤';
+  avatar.textContent = role === 'bot' ? '' : '';
   const bubble = document.createElement('div');
   bubble.className = 'ai-bubble';
   bubble.innerHTML = html;
@@ -1014,7 +1014,7 @@ function addMsg(role, html, actions){
     const hdr = document.createElement('div');
     hdr.className = 'ai-action-card-hdr';
     const hasWrite = actions.some(a => a.kind !== 'read');
-    hdr.innerHTML = (hasWrite ? '⚡ Notion updated' : '🔍 Database queried');
+    hdr.innerHTML = (hasWrite ? 'Notion updated' : 'Database queried');
     card.appendChild(hdr);
     actions.forEach(a => {
       const row = document.createElement('div');
@@ -1038,7 +1038,7 @@ function addThinking(){
   const div = document.createElement('div');
   div.className = 'ai-msg bot';
   div.id = id;
-  div.innerHTML = `<div class="ai-avatar">🐾</div><div class="ai-bubble"><div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div></div>`;
+  div.innerHTML = `<div class="ai-avatar"></div><div class="ai-bubble"><div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div></div>`;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   return id;
@@ -1256,7 +1256,7 @@ async function callOrderNow(){
     if(!r.ok){ showToast('Twilio error: '+(d.error||'unknown'),'err'); return; }
     showToast(`Calling ${phone} ✓ (SID …${d.callSid.slice(-6)})`,'ok');
   } catch(e){ showToast('Call failed','err'); }
-  finally{ btn.textContent='📲 Call'; btn.disabled=false; }
+  finally{ btn.textContent='Call'; btn.disabled=false; }
 }
 
 /* ─── Tracker ────────────────────────────────────────────────────────────────── */
@@ -1385,7 +1385,7 @@ async function loadCallbacks(){
         <td class="td-mono" style="font-size:.75rem">${cb.requestedAt??'?'}</td>
         <td>
           <div style="display:flex;gap:5px;align-items:center;flex-wrap:nowrap">
-            <button class="btn btn-primary btn-sm" onclick="callNow('${cb.callbackId}','${esc(cb.customerName)}','${cb.orderId||''}','${esc(cb.reason)}')">📲 Call</button>
+            <button class="btn btn-primary btn-sm" onclick="callNow('${cb.callbackId}','${esc(cb.customerName)}','${cb.orderId||''}','${esc(cb.reason)}')">Call</button>
             ${isPending ? `<button class="btn btn-ghost btn-sm" onclick="approveCallback('${cb.callbackId}')">✓ Approve</button>` : isApproved ? `<span class="badge b-open" style="font-size:.6rem">~2 min</span>` : ''}
             <button class="btn btn-ghost btn-sm" style="color:var(--muted)" onclick="resolveCallback('${cb.callbackId}')">✕</button>
           </div>
@@ -1414,7 +1414,7 @@ async function loadCallbacks(){
   } catch(e){ console.error('loadCallbacks:',e); }
 }
 
-function urgentCardHtml(o, icon){
+function urgentCardHtml(o, kind){
   const paid = o.paymentMethod && o.paymentMethod !== 'Unpaid';
   const typeBadge = o.orderType === 'Expedited'
     ? '<span class="badge b-exp">Expedited</span>'
@@ -1423,13 +1423,12 @@ function urgentCardHtml(o, icon){
     ? '<span class="badge b-paid">Paid · ' + o.paymentMethod + '</span>'
     : '<span class="badge b-unpaid">Unpaid' + (o.price ? ' · $' + o.price : '') + '</span>';
   const datePart = o.expectedDate
-    ? '<span style="font-family:var(--fm);font-size:.72rem;color:var(--muted)">' + (icon === '🚨' ? 'Expected ' : 'Due ') + o.expectedDate + '</span>'
+    ? '<span style="font-family:var(--fm);font-size:.72rem;color:var(--muted)">' + (kind === 'overdue' ? 'Expected ' : 'Due ') + o.expectedDate + '</span>'
     : '';
-  return '<div class="cb-card' + (icon === '🚨' ? ' urgent-cb' : '') + '" onclick="openDrawerForOrder(\'' + o.pageId + '\')">'
-    + '<div class="cb-icon">' + icon + '</div>'
+  return '<div class="cb-card' + (kind === 'overdue' ? ' urgent-cb' : '') + '" onclick="openDrawerForOrder(\'' + o.pageId + '\')">'
     + '<div class="cb-body">'
     + '<div class="cb-name">' + o.customerName + ' — ' + o.orderId + '</div>'
-    + '<div class="cb-reason">' + (o.garmentType || 'Order') + (icon === '🚨' ? ' due ' + (o.expectedDate || '?') + '. Stage: ' + (o.tracker || '—') : icon === '⚠️' ? ' due today. Stage: ' + (o.tracker || '—') : ' ready. Customer not yet collected.') + '.</div>'
+    + '<div class="cb-reason">' + (o.garmentType || 'Order') + (kind === 'overdue' ? ' due ' + (o.expectedDate || '?') + '. Stage: ' + (o.tracker || '—') : kind === 'dueToday' ? ' due today. Stage: ' + (o.tracker || '—') : ' ready. Customer not yet collected.') + '.</div>'
     + '<div class="cb-meta">' + typeBadge + payBadge + datePart + '</div>'
     + '</div>'
     + '<div class="cb-actions"><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDrawerForOrder(\'' + o.pageId + '\')">View</button></div>'
@@ -1443,18 +1442,18 @@ async function loadUrgentOrders(){
     const d = await (await fetch('/api/dashboard/urgent',{headers:authH()})).json();
     let html = '';
     const gap = () => html.length ? '18px' : '0';
-    const lbl = (icon, text, n) => `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin:${gap()} 0 10px">${icon} ${text} (${n})</div>`;
+    const lbl = (text, n) => `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--red);margin:${gap()} 0 10px">${text} (${n})</div>`;
     if(d.overdue && d.overdue.length){
-      html += lbl('🚨','Overdue', d.overdue.length);
-      html += d.overdue.map(o => urgentCardHtml(o,'🚨')).join('');
+      html += lbl('Overdue', d.overdue.length);
+      html += d.overdue.map(o => urgentCardHtml(o,'overdue')).join('');
     }
     if(d.dueToday && d.dueToday.length){
-      html += lbl('⚠️','Due Today', d.dueToday.length);
-      html += d.dueToday.map(o => urgentCardHtml(o,'⚠️')).join('');
+      html += lbl('Due Today', d.dueToday.length);
+      html += d.dueToday.map(o => urgentCardHtml(o,'dueToday')).join('');
     }
     if(d.readyForPickup && d.readyForPickup.length){
-      html += `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:${gap()} 0 10px">⏰ Ready for Pickup (${d.readyForPickup.length})</div>`;
-      html += d.readyForPickup.map(o => urgentCardHtml(o,'⏰')).join('');
+      html += `<div style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:${gap()} 0 10px">Ready for Pickup (${d.readyForPickup.length})</div>`;
+      html += d.readyForPickup.map(o => urgentCardHtml(o,'readyForPickup')).join('');
     }
     container.innerHTML = html || '';
   } catch(e){ console.error('loadUrgentOrders:',e); container.innerHTML=''; }
@@ -1499,7 +1498,7 @@ async function approveCallback(id){
   try{
     await fetch(`/api/dashboard/callbacks/${id}/approve`,{method:'POST',headers:jsonH()});
     await loadCallbacks(); await loadStats();
-    showToast('Approved — auto-call in ≤2 min ✓','ok');
+    showToast('Approved','ok');
   } catch(e){ showToast('Failed','err'); }
 }
 
@@ -1750,7 +1749,7 @@ document.getElementById('nlp-input').addEventListener('input', function(){
   if(p.price!=null) parts.push(`$${p.price.toFixed(2)}`);
   if(p.expectedDate) parts.push(`due ${p.expectedDate}`);
   const prev = document.getElementById('nlp-preview');
-  prev.innerHTML = '🔍 Parsed: ' + (parts.length ? parts.join(' · ') : '<em>keep typing…</em>');
+  prev.innerHTML = 'Parsed: ' + (parts.length ? parts.join(' · ') : '<em>keep typing…</em>');
   prev.style.display='block';
 });
 
